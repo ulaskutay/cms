@@ -1,0 +1,26 @@
+{
+    "name": "cache",
+    "title": "Cache Yönetimi",
+    "version": "1.0.0",
+    "description": "Performans optimizasyonu için gelişmiş önbellek sistemi. Sayfa cache, veritabanı sorgu cache, OPcache yönetimi ve dosya tabanlı cache desteği sunar.",
+    "author": "Codetic",
+    "website": "https://example.com",
+    "requires_php": "7.4",
+    "requires_cms": "1.0",
+    "main_file": "Controller.php",
+    "admin_menu": {
+        "title": "Cache",
+        "icon": "cached",
+        "position": 85
+    },
+    "routes": [],
+    "shortcodes": [],
+    "widgets": [],
+    "settings": true,
+    "hooks": {
+        "actions": ["init", "shutdown"],
+        "filters": ["pre_query", "post_render"]
+    }
+}
+
+
