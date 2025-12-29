@@ -574,9 +574,25 @@ class ThemeManager {
             foreach ($userOptions as $option) {
                 $group = $option['option_group'];
                 $key = $option['option_key'];
-                if (isset($settings[$group][$key])) {
-                    $settings[$group][$key]['value'] = $option['option_value'];
+                
+                // Eğer grup schema'da yoksa, oluştur
+                if (!isset($settings[$group])) {
+                    $settings[$group] = [];
                 }
+                
+                // Eğer key schema'da yoksa, oluştur
+                if (!isset($settings[$group][$key])) {
+                    $settings[$group][$key] = [
+                        'label' => $key,
+                        'type' => 'text',
+                        'default' => '',
+                        'options' => [],
+                        'value' => ''
+                    ];
+                }
+                
+                // Değeri ayarla
+                $settings[$group][$key]['value'] = $option['option_value'];
             }
         }
         
@@ -669,16 +685,36 @@ class ThemeManager {
             }
             
             // Normal ayarları kaydet
-            $stmt = $this->db->prepare("
+            // UNIQUE KEY (theme_id, option_key) olduğu için, aynı key için sadece bir kayıt olabilir
+            // Bu yüzden her key için kontrol edip INSERT veya UPDATE yapıyoruz
+            $stmtInsert = $this->db->prepare("
                 INSERT INTO theme_options (theme_id, option_group, option_key, option_value)
                 VALUES (?, ?, ?, ?)
-                ON DUPLICATE KEY UPDATE option_value = VALUES(option_value)
+            ");
+            $stmtUpdate = $this->db->prepare("
+                UPDATE theme_options 
+                SET option_value = ?, option_group = ?
+                WHERE theme_id = ? AND option_key = ?
             ");
             
             foreach ($settings as $group => $groupSettings) {
                 if (is_array($groupSettings)) {
                     foreach ($groupSettings as $key => $value) {
-                        $stmt->execute([$theme['id'], $group, $key, is_array($value) ? json_encode($value) : $value]);
+                        $valueToSave = is_array($value) ? json_encode($value) : (string)$value;
+                        
+                        // Mevcut kaydı kontrol et (her seferinde yeni statement kullan)
+                        $stmtCheck = $this->db->prepare("SELECT id, option_group FROM theme_options WHERE theme_id = ? AND option_key = ? LIMIT 1");
+                        $stmtCheck->execute([$theme['id'], $key]);
+                        $existing = $stmtCheck->fetch(PDO::FETCH_ASSOC);
+                        $stmtCheck->closeCursor(); // Cursor'ı kapat
+                        
+                        if ($existing) {
+                            // Güncelle (hem value hem group)
+                            $stmtUpdate->execute([$valueToSave, $group, $theme['id'], $key]);
+                        } else {
+                            // Yeni ekle
+                            $stmtInsert->execute([$theme['id'], $group, $key, $valueToSave]);
+                        }
                     }
                 }
             }

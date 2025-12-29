@@ -73,15 +73,34 @@ $currentFavicon = $settings['branding']['site_favicon']['value'] ?? '';
         .section-panel.open { max-height: 2000px; }
         .section-btn.active { background: linear-gradient(135deg, rgba(99,102,241,0.15) 0%, rgba(139,92,246,0.1) 100%); border-color: rgba(99,102,241,0.3); }
         .section-btn.active .section-icon { background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: white; }
-        input[type="color"] { -webkit-appearance: none; border: none; cursor: pointer; }
+        input[type="color"] { 
+            -webkit-appearance: none; 
+            border: none; 
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+        }
         input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
         input[type="color"]::-webkit-color-swatch { border: none; border-radius: 8px; }
         .scrollbar-thin::-webkit-scrollbar { width: 5px; }
         .scrollbar-thin::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); }
         .scrollbar-thin::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
         .scrollbar-thin::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
-        .input-field { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); transition: all 0.2s; }
-        .input-field:focus { background: rgba(255,255,255,0.08); border-color: rgba(99,102,241,0.5); outline: none; box-shadow: 0 0 0 3px rgba(99,102,241,0.1); }
+        .input-field { 
+            background: rgba(255,255,255,0.05) !important; 
+            border: 1px solid rgba(255,255,255,0.1) !important; 
+            color: white !important;
+            transition: all 0.2s; 
+        }
+        .input-field::placeholder {
+            color: rgba(255,255,255,0.4) !important;
+        }
+        .input-field:focus { 
+            background: rgba(255,255,255,0.08) !important; 
+            border-color: rgba(99,102,241,0.5) !important; 
+            outline: none; 
+            box-shadow: 0 0 0 3px rgba(99,102,241,0.1); 
+        }
         .btn-primary { background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); }
         .btn-primary:hover { background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); transform: translateY(-1px); box-shadow: 0 10px 40px -10px rgba(99,102,241,0.5); }
         @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
@@ -223,15 +242,15 @@ $currentFavicon = $settings['branding']['site_favicon']['value'] ?? '';
                             <div>
                                 <label class="block text-xs font-medium text-slate-300 mb-2">Header Arka Plan</label>
                                 <div class="flex items-center gap-3">
-                                    <input type="color" name="header[bg_color]" value="<?php echo esc_attr($settings['header']['bg_color']['value'] ?? '#ffffff'); ?>" class="w-10 h-10 rounded-lg">
-                                    <input type="text" value="<?php echo esc_attr($settings['header']['bg_color']['value'] ?? '#ffffff'); ?>" class="flex-1 px-4 py-2.5 input-field rounded-lg text-sm font-mono" oninput="this.previousElementSibling.value = this.value">
+                                    <input type="color" id="header_bg_color_picker" value="<?php echo esc_attr($settings['header']['bg_color']['value'] ?? '#ffffff'); ?>" class="w-10 h-10 rounded-lg" oninput="document.getElementById('header_bg_color').value = this.value">
+                                    <input type="text" name="header[bg_color]" id="header_bg_color" value="<?php echo esc_attr($settings['header']['bg_color']['value'] ?? '#ffffff'); ?>" class="flex-1 px-4 py-2.5 input-field rounded-lg text-sm font-mono" oninput="document.getElementById('header_bg_color_picker').value = this.value">
                                 </div>
                             </div>
                             <div>
                                 <label class="block text-xs font-medium text-slate-300 mb-2">Metin Rengi</label>
                                 <div class="flex items-center gap-3">
-                                    <input type="color" name="header[text_color]" value="<?php echo esc_attr($settings['header']['text_color']['value'] ?? '#1f2937'); ?>" class="w-10 h-10 rounded-lg">
-                                    <input type="text" value="<?php echo esc_attr($settings['header']['text_color']['value'] ?? '#1f2937'); ?>" class="flex-1 px-4 py-2.5 input-field rounded-lg text-sm font-mono" oninput="this.previousElementSibling.value = this.value">
+                                    <input type="color" id="header_text_color_picker" value="<?php echo esc_attr($settings['header']['text_color']['value'] ?? '#1f2937'); ?>" class="w-10 h-10 rounded-lg" oninput="document.getElementById('header_text_color').value = this.value">
+                                    <input type="text" name="header[text_color]" id="header_text_color" value="<?php echo esc_attr($settings['header']['text_color']['value'] ?? '#1f2937'); ?>" class="flex-1 px-4 py-2.5 input-field rounded-lg text-sm font-mono" oninput="document.getElementById('header_text_color_picker').value = this.value">
                                 </div>
                             </div>
                             <label class="flex items-center gap-3 cursor-pointer p-3 rounded-lg hover:bg-white/5 transition-colors">
@@ -784,10 +803,12 @@ function saveSettings() {
     btn.disabled = true;
     btn.innerHTML = '<span class="material-symbols-outlined text-lg animate-spin">progress_activity</span> Kaydediliyor...';
     
+    const settingsData = collectSettings();
+    
     fetch('<?php echo admin_url('themes/saveSettings'); ?>', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ theme_slug: themeSlug, settings: collectSettings() })
+        body: JSON.stringify({ theme_slug: themeSlug, settings: settingsData })
     })
     .then(r => r.json())
     .then(data => {
@@ -798,7 +819,9 @@ function saveSettings() {
             showToast('Hata!', data.message || 'Bir sorun oluştu', 'error');
         }
     })
-    .catch(e => showToast('Hata!', 'Bağlantı sorunu', 'error'))
+    .catch(e => {
+        showToast('Hata!', 'Bağlantı sorunu', 'error');
+    })
     .finally(() => {
         btn.disabled = false;
         btn.innerHTML = '<span class="material-symbols-outlined text-lg">save</span> Kaydet';
