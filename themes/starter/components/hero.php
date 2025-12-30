@@ -70,8 +70,8 @@ $overlayOpacityDecimal = intval($overlayOpacity) / 100;
     
     <!-- Scroll Indicator -->
     <div class="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce">
-        <a href="#features" class="text-white/50 hover:text-white transition-colors">
-            <span class="material-symbols-outlined text-3xl">keyboard_arrow_down</span>
+        <a href="#features" class="text-white/70 hover:text-white transition-colors" aria-label="Aşağı kaydır">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
         </a>
     </div>
 </section>

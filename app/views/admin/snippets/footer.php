@@ -3,9 +3,6 @@
  * Admin Footer Snippet
  */
 ?>
-    <!-- Tailwind CSS - Load at end of body to prevent render-blocking -->
-    <script src="<?php echo ViewRenderer::assetUrl('assets/js/tailwind-admin.min.js'); ?>"></script>
-    
     <!-- Footer Scripts -->
     <script>
         // Dark mode toggle

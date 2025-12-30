@@ -292,5 +292,24 @@ class MediaLibraryController extends Controller {
             ]
         ]);
     }
+    
+    /**
+     * Mevcut görselleri WebP'ye dönüştür (AJAX)
+     */
+    public function convertToWebP() {
+        $this->checkAuth();
+        
+        // Yetki kontrolü
+        if (!current_user_can('media.edit')) {
+            $this->json(['success' => false, 'message' => 'Dönüştürme yetkiniz yoktur!'], 403);
+        }
+        
+        $limit = isset($_POST['limit']) ? (int)$_POST['limit'] : 100;
+        $deleteOriginal = isset($_POST['delete_original']) ? (bool)$_POST['delete_original'] : true;
+        
+        $result = $this->mediaModel->convertExistingImagesToWebP($limit, $deleteOriginal);
+        
+        $this->json($result);
+    }
 }
 

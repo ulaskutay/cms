@@ -70,6 +70,40 @@
     $bodyFont = $themeLoader && $renderer->hasActiveTheme() ? $themeLoader->getFont('body', 'Inter') : 'Inter';
     ?>
     
+    <!-- Critical CSS - Prevent Layout Shift -->
+    <style>
+        /* Prevent FOUC - Hide body until Tailwind loads */
+        body:not(.tw-loaded) {
+            visibility: hidden;
+        }
+        body.tw-loaded {
+            visibility: visible;
+        }
+        
+        /* Header critical styles */
+        header {
+            min-height: 72px;
+            position: relative;
+        }
+        
+        /* Logo placeholder to prevent shift */
+        header a[href="/"], header a[href*="site"] {
+            min-width: 120px;
+            min-height: 48px;
+            display: inline-flex;
+            align-items: center;
+        }
+        
+        header img[alt*="Logo"], header img[alt*="logo"], header img[alt*="Site"] {
+            display: block;
+            width: 48px;
+            height: 48px;
+            min-width: 48px;
+            min-height: 48px;
+            object-fit: contain;
+        }
+    </style>
+    
     <?php if ($renderer->hasActiveTheme()): ?>
     <!-- Tema CSS Değişkenleri -->
     <?php echo $themeLoader->getCssVariablesTag(); ?>
@@ -121,6 +155,10 @@
         echo $themeLoader->getHeadOutput();
     }
     
+    // Preload Tailwind CSS JS for faster loading -->
+    <link rel="preload" href="<?php echo ViewRenderer::assetUrl('assets/js/tailwind.min.js'); ?>" as="script">
+    
+    <?php
     // Ek stiller
     if (isset($sections['styles'])) {
         echo $sections['styles'];
@@ -204,8 +242,25 @@
     }
     ?>
     
-    <!-- Tailwind CSS - Load at end of body to prevent render-blocking -->
-    <script src="<?php echo ViewRenderer::assetUrl('assets/js/tailwind.min.js'); ?>"></script>
+    <!-- Tailwind CSS - Load synchronously to prevent layout shift -->
+    <script>
+        // Mark body as loaded once Tailwind processes
+        (function() {
+            const script = document.createElement('script');
+            script.src = '<?php echo ViewRenderer::assetUrl('assets/js/tailwind.min.js'); ?>';
+            script.onload = function() {
+                // Small delay to ensure Tailwind has processed
+                setTimeout(function() {
+                    document.body.classList.add('tw-loaded');
+                }, 10);
+            };
+            script.onerror = function() {
+                // Even if script fails, show content
+                document.body.classList.add('tw-loaded');
+            };
+            document.head.appendChild(script);
+        })();
+    </script>
     
     <!-- Privacy-Friendly Analytics -->
     <script src="/public/frontend/js/analytics.js" defer></script>

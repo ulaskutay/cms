@@ -53,9 +53,23 @@ $primaryColor = $themeLoader->getColor('primary', '#137fec');
     <?php if (!empty($meta_description)): ?>
     <meta name="description" content="<?php echo esc_attr($meta_description); ?>">
     <?php endif; ?>
-    <!-- Preload Fonts CSS to prevent render-blocking -->
-    <link rel="preload" href="<?php echo ViewRenderer::assetUrl('assets/css/fonts.css'); ?>" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript><link rel="stylesheet" href="<?php echo ViewRenderer::assetUrl('assets/css/fonts.css'); ?>"></noscript>
+    <!-- Inline Font Definitions (Only essential weights) -->
+    <style>
+        @font-face {
+            font-family: 'Inter';
+            src: url('<?php echo ViewRenderer::assetUrl('assets/fonts/inter/inter-400.woff2'); ?>') format('woff2');
+            font-weight: 400;
+            font-style: normal;
+            font-display: swap;
+        }
+        @font-face {
+            font-family: 'Poppins';
+            src: url('<?php echo ViewRenderer::assetUrl('assets/fonts/poppins/poppins-600.woff2'); ?>') format('woff2');
+            font-weight: 600;
+            font-style: normal;
+            font-display: swap;
+        }
+    </style>
     <style>
         /* Form CSS - Inline */
         .cms-form-wrapper { max-width: 600px; margin: 0 auto; }
@@ -119,6 +133,9 @@ $primaryColor = $themeLoader->getColor('primary', '#137fec');
         .border-primary { border-color: var(--color-primary); }
         .ring-primary { --tw-ring-color: var(--color-primary); }
     </style>
+    
+    <!-- Preload Tailwind CSS JS for faster loading -->
+    <link rel="preload" href="<?php echo ViewRenderer::assetUrl('assets/js/tailwind.min.js'); ?>" as="script">
 </head>
 <body class="antialiased bg-gray-50">
     
@@ -147,7 +164,7 @@ $primaryColor = $themeLoader->getColor('primary', '#137fec');
                         <?php if (!empty($contactEmail)): ?>
                         <div class="flex items-start gap-4">
                             <div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center flex-shrink-0">
-                                <span class="material-symbols-outlined text-primary">mail</span>
+                                <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
                             </div>
                             <div>
                                 <h3 class="font-semibold text-gray-900 mb-1">E-posta</h3>
@@ -161,7 +178,7 @@ $primaryColor = $themeLoader->getColor('primary', '#137fec');
                         <?php if (!empty($contactPhone)): ?>
                         <div class="flex items-start gap-4">
                             <div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center flex-shrink-0">
-                                <span class="material-symbols-outlined text-primary">phone</span>
+                                <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
                             </div>
                             <div>
                                 <h3 class="font-semibold text-gray-900 mb-1">Telefon</h3>
@@ -175,7 +192,7 @@ $primaryColor = $themeLoader->getColor('primary', '#137fec');
                         <?php if (!empty($contactAddress)): ?>
                         <div class="flex items-start gap-4">
                             <div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center flex-shrink-0">
-                                <span class="material-symbols-outlined text-primary">location_on</span>
+                                <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                             </div>
                             <div>
                                 <h3 class="font-semibold text-gray-900 mb-1">Adres</h3>
@@ -187,7 +204,7 @@ $primaryColor = $themeLoader->getColor('primary', '#137fec');
                         <?php if (!empty($contactHours)): ?>
                         <div class="flex items-start gap-4">
                             <div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center flex-shrink-0">
-                                <span class="material-symbols-outlined text-primary">schedule</span>
+                                <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                             </div>
                             <div>
                                 <h3 class="font-semibold text-gray-900 mb-1">Çalışma Saatleri</h3>
@@ -268,7 +285,7 @@ $primaryColor = $themeLoader->getColor('primary', '#137fec');
     
     <?php echo $themeLoader->renderSnippet('footer'); ?>
     
-    <!-- Tailwind CSS - Load at end of body to prevent render-blocking -->
-    <script src="<?php echo ViewRenderer::assetUrl('assets/js/tailwind.min.js'); ?>"></script>
+    <!-- Tailwind CSS - Load with defer to prevent render-blocking -->
+    <script src="<?php echo ViewRenderer::assetUrl('assets/js/tailwind.min.js'); ?>" defer></script>
 </body>
 </html>

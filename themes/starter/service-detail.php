@@ -71,32 +71,37 @@ if (!empty($customFields['related_services'])) {
         <?php echo $themeLoader->getCssVariablesTag(); ?>
     <?php endif; ?>
     
-    <!-- Preload Material Symbols Font for Faster Icon Loading -->
-    <link rel="preload" href="<?php echo ViewRenderer::assetUrl('assets/fonts/material-symbols/material-symbols-outlined.woff2'); ?>" as="font" type="font/woff2" crossorigin="anonymous">
-    
-    <!-- Material Symbols Base Styles (Inline for Faster Rendering) -->
+    <!-- Inline Font Definitions (Only essential weights) -->
     <style>
-        .material-symbols-outlined {
-            font-family: 'Material Symbols Outlined';
-            font-weight: normal;
+        @font-face {
+            font-family: 'Inter';
+            src: url('<?php echo ViewRenderer::assetUrl('assets/fonts/inter/inter-400.woff2'); ?>') format('woff2');
+            font-weight: 400;
             font-style: normal;
-            font-size: 24px;
-            line-height: 1;
-            letter-spacing: normal;
-            text-transform: none;
-            display: inline-block;
-            white-space: nowrap;
-            word-wrap: normal;
-            direction: ltr;
-            -webkit-font-feature-settings: 'liga';
-            -webkit-font-smoothing: antialiased;
-            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            font-display: swap;
+        }
+        @font-face {
+            font-family: 'Inter';
+            src: url('<?php echo ViewRenderer::assetUrl('assets/fonts/inter/inter-600.woff2'); ?>') format('woff2');
+            font-weight: 600;
+            font-style: normal;
+            font-display: swap;
+        }
+        @font-face {
+            font-family: 'Poppins';
+            src: url('<?php echo ViewRenderer::assetUrl('assets/fonts/poppins/poppins-600.woff2'); ?>') format('woff2');
+            font-weight: 600;
+            font-style: normal;
+            font-display: swap;
+        }
+        @font-face {
+            font-family: 'Poppins';
+            src: url('<?php echo ViewRenderer::assetUrl('assets/fonts/poppins/poppins-700.woff2'); ?>') format('woff2');
+            font-weight: 700;
+            font-style: normal;
+            font-display: swap;
         }
     </style>
-    
-    <!-- Preload Fonts CSS to prevent render-blocking -->
-    <link rel="preload" href="<?php echo ViewRenderer::assetUrl('assets/css/fonts.css'); ?>" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript><link rel="stylesheet" href="<?php echo ViewRenderer::assetUrl('assets/css/fonts.css'); ?>"></noscript>
     
     <script>
         tailwind.config = {
@@ -159,6 +164,9 @@ if (!empty($customFields['related_services'])) {
             opacity: 1;
             transform: translateY(0);
         }
+    
+    <!-- Preload Tailwind CSS JS for faster loading -->
+    <link rel="preload" href="<?php echo ViewRenderer::assetUrl('assets/js/tailwind.min.js'); ?>" as="script">
         
         .process-line::before {
             content: '';
@@ -215,7 +223,7 @@ if (!empty($customFields['related_services'])) {
                     <div class="fade-up">
                         <?php if (!empty($heroSubtitle)): ?>
                         <span class="inline-flex items-center px-4 py-1.5 rounded-full text-sm font-medium bg-primary/10 text-primary mb-6">
-                            <span class="material-symbols-outlined text-lg mr-2">auto_awesome</span>
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
                             <?php echo esc_html($heroSubtitle); ?>
                         </span>
                         <?php endif; ?>
@@ -233,11 +241,11 @@ if (!empty($customFields['related_services'])) {
                         <div class="flex flex-col sm:flex-row gap-4">
                             <a href="<?php echo esc_url($ctaButtonLink); ?>" class="btn-primary inline-flex items-center justify-center px-8 py-4 rounded-xl text-white font-semibold text-lg">
                                 <?php echo esc_html($ctaButtonText); ?>
-                                <span class="material-symbols-outlined ml-2">arrow_forward</span>
+                                <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
                             </a>
                             <a href="#features" class="inline-flex items-center justify-center px-8 py-4 rounded-xl border-2 border-gray-200 text-gray-700 font-semibold text-lg hover:border-primary hover:text-primary transition-all">
                                 Detayları İncele
-                                <span class="material-symbols-outlined ml-2">expand_more</span>
+                                <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                             </a>
                         </div>
                     </div>
@@ -252,7 +260,7 @@ if (!empty($customFields['related_services'])) {
                         <!-- Floating Badge -->
                         <div class="absolute -bottom-6 -left-6 bg-white rounded-xl shadow-xl p-4 flex items-center gap-3">
                             <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
-                                <span class="material-symbols-outlined text-white text-2xl">verified</span>
+                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
                             </div>
                             <div>
                                 <p class="font-bold text-gray-900">Profesyonel Hizmet</p>
@@ -283,7 +291,21 @@ if (!empty($customFields['related_services'])) {
                     <div class="fade-up card-hover bg-gray-50 rounded-2xl p-8 border border-gray-100" style="animation-delay: <?php echo $index * 0.1; ?>s;">
                         <?php if (!empty($feature['icon'])): ?>
                         <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center mb-6">
-                            <span class="material-symbols-outlined text-white text-2xl"><?php echo esc_html($feature['icon']); ?></span>
+                            <?php 
+                            // SVG icon mapping (PHP 7 compatible)
+                            $featureIconMap = array(
+                                'code' => '<svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>',
+                                'rocket_launch' => '<svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>',
+                                'security' => '<svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>',
+                                'palette' => '<svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/></svg>',
+                                'devices' => '<svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>',
+                                'support' => '<svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"/></svg>',
+                                'settings' => '<svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>',
+                                'check_circle' => '<svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>'
+                            );
+                            $defaultFeatureIcon = '<svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>';
+                            echo isset($featureIconMap[$feature['icon']]) ? $featureIconMap[$feature['icon']] : $defaultFeatureIcon;
+                            ?>
                         </div>
                         <?php endif; ?>
                         
@@ -372,7 +394,17 @@ if (!empty($customFields['related_services'])) {
                     <div class="fade-up text-center p-6 rounded-2xl bg-white/5 backdrop-blur border border-white/10 hover:bg-white/10 transition-all" style="animation-delay: <?php echo $index * 0.1; ?>s;">
                         <?php if (!empty($advantage['icon'])): ?>
                         <div class="w-16 h-16 mx-auto rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center mb-4">
-                            <span class="material-symbols-outlined text-white text-3xl"><?php echo esc_html($advantage['icon']); ?></span>
+                            <?php 
+                            // SVG icon mapping (PHP 7 compatible)
+                            $advantageIconMap = array(
+                                'trending_up' => '<svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>',
+                                'groups' => '<svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>',
+                                'star' => '<svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>',
+                                'verified' => '<svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>'
+                            );
+                            $defaultAdvantageIcon = '<svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>';
+                            echo isset($advantageIconMap[$advantage['icon']]) ? $advantageIconMap[$advantage['icon']] : $defaultAdvantageIcon;
+                            ?>
                         </div>
                         <?php endif; ?>
                         
@@ -408,7 +440,7 @@ if (!empty($customFields['related_services'])) {
                     <div class="fade-up faq-item border border-gray-200 rounded-xl overflow-hidden" style="animation-delay: <?php echo $index * 0.1; ?>s;">
                         <button class="faq-toggle w-full flex items-center justify-between p-6 text-left hover:bg-gray-50 transition-colors">
                             <span class="font-semibold text-gray-900 pr-4"><?php echo esc_html($faq['question'] ?? ''); ?></span>
-                            <span class="material-symbols-outlined text-gray-400 faq-icon transition-transform">expand_more</span>
+                            <svg class="w-5 h-5 text-gray-400 faq-icon transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                         </button>
                         <div class="faq-content">
                             <div class="px-6 pb-6 text-gray-600">
@@ -449,7 +481,7 @@ if (!empty($customFields['related_services'])) {
                             <?php endif; ?>
                             <span class="inline-flex items-center text-primary font-medium mt-4">
                                 İncele
-                                <span class="material-symbols-outlined ml-1 group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                                <svg class="w-5 h-5 ml-1 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
                             </span>
                         </div>
                     </a>
@@ -477,10 +509,10 @@ if (!empty($customFields['related_services'])) {
                     <div class="flex flex-col sm:flex-row gap-4 justify-center">
                         <a href="<?php echo esc_url($ctaButtonLink); ?>" class="inline-flex items-center justify-center px-8 py-4 rounded-xl bg-white text-primary font-semibold text-lg hover:bg-gray-100 transition-all shadow-xl hover:shadow-2xl hover:-translate-y-1">
                             <?php echo esc_html($ctaButtonText); ?>
-                            <span class="material-symbols-outlined ml-2">arrow_forward</span>
+                            <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
                         </a>
                         <a href="tel:<?php echo esc_attr(preg_replace('/[^0-9+]/', '', get_option('contact_phone', ''))); ?>" class="inline-flex items-center justify-center px-8 py-4 rounded-xl border-2 border-white/30 text-white font-semibold text-lg hover:bg-white/10 transition-all">
-                            <span class="material-symbols-outlined mr-2">phone</span>
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
                             Hemen Ara
                         </a>
                     </div>
@@ -540,7 +572,7 @@ if (!empty($customFields['related_services'])) {
     });
     </script>
     
-    <!-- Tailwind CSS - Load at end of body to prevent render-blocking -->
-    <script src="<?php echo ViewRenderer::assetUrl('assets/js/tailwind.min.js'); ?>"></script>
+    <!-- Tailwind CSS - Load with defer to prevent render-blocking -->
+    <script src="<?php echo ViewRenderer::assetUrl('assets/js/tailwind.min.js'); ?>" defer></script>
 </body>
 </html>

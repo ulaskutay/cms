@@ -1419,10 +1419,25 @@ function time_ago($datetime) {
  * @return string Logo URL'i
  */
 function get_site_logo() {
-    // Önce ayarlardan kontrol et
-    $logo = get_option('site_logo', '');
+    // Önce tema ayarlarından kontrol et
+    $logo = null;
+    if (class_exists('ThemeLoader')) {
+        try {
+            $themeLoader = ThemeLoader::getInstance();
+            if ($themeLoader && $themeLoader->hasActiveTheme()) {
+                $logo = $themeLoader->getLogo();
+            }
+        } catch (Exception $e) {
+            // Hata durumunda sessizce devam et
+        }
+    }
     
-    // Ayarlarda yoksa varsayılan logo'yu kullan
+    // Tema ayarlarında yoksa ayarlardan kontrol et
+    if (empty($logo)) {
+        $logo = get_option('site_logo', '');
+    }
+    
+    // Ayarlarda da yoksa varsayılan logo'yu kullan
     if (empty($logo)) {
         $defaultLogo = site_url('uploads/Logo/codetic-logo.jpg');
         // Dosya var mı kontrol et
@@ -1440,10 +1455,25 @@ function get_site_logo() {
  * @return string Favicon URL'i
  */
 function get_site_favicon() {
-    // Önce ayarlardan kontrol et
-    $favicon = get_option('site_favicon', '');
+    // Önce tema ayarlarından kontrol et
+    $favicon = null;
+    if (class_exists('ThemeLoader')) {
+        try {
+            $themeLoader = ThemeLoader::getInstance();
+            if ($themeLoader && $themeLoader->hasActiveTheme()) {
+                $favicon = $themeLoader->getFavicon();
+            }
+        } catch (Exception $e) {
+            // Hata durumunda sessizce devam et
+        }
+    }
     
-    // Ayarlarda yoksa varsayılan favicon'u kullan
+    // Tema ayarlarında yoksa ayarlardan kontrol et
+    if (empty($favicon)) {
+        $favicon = get_option('site_favicon', '');
+    }
+    
+    // Ayarlarda da yoksa varsayılan favicon'u kullan
     if (empty($favicon)) {
         $defaultFavicon = site_url('uploads/Logo/codetic-favicon.png');
         // Dosya var mı kontrol et

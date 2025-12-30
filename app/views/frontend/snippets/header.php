@@ -124,15 +124,24 @@ function renderMobileMenuItem($item, $level = 0) {
 
 <header class="sticky top-0 z-50 bg-white/95 backdrop-blur-sm shadow-sm border-b border-gray-100">
   <nav class="max-w-7xl mx-auto px-6 lg:px-8">
-    <div class="flex items-center justify-between h-16 lg:h-20">
+    <div class="flex items-center justify-between h-18 sm:h-20 lg:h-24">
       <!-- Logo -->
       <a href="<?php echo ViewRenderer::siteUrl(); ?>" class="flex items-center gap-3 group">
-        <div class="w-10 h-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg flex items-center justify-center transform transition-transform group-hover:scale-105">
-          <svg class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z"/>
-          </svg>
-        </div>
-        <span class="text-xl lg:text-2xl font-bold text-gray-900"><?php echo esc_html(get_option('site_name', 'Site Adı')); ?></span>
+        <?php 
+        $siteLogo = get_site_logo();
+        if (!empty($siteLogo)): ?>
+          <img src="<?php echo esc_url($siteLogo); ?>" 
+               alt="<?php echo esc_attr(get_option('site_name', 'Site Adı')); ?>" 
+               class="h-12 sm:h-14 lg:h-16 w-auto object-contain transform transition-transform group-hover:scale-105"
+               loading="eager">
+        <?php else: ?>
+          <div class="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg flex items-center justify-center transform transition-transform group-hover:scale-105">
+            <svg class="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 text-white" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z"/>
+            </svg>
+          </div>
+        <?php endif; ?>
+        <span class="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900"><?php echo esc_html(get_option('site_name', 'Site Adı')); ?></span>
       </a>
 
       <!-- Navigation Links (Desktop) - 3+ Seviye Desteği -->

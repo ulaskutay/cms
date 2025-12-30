@@ -42,7 +42,7 @@ if ($formId && function_exists('get_form_by_id')) {
             <!-- Buton Gösterimi -->
             <a href="<?php echo htmlspecialchars($buttonLink); ?>" class="inline-flex items-center gap-2 bg-white text-primary px-10 py-4 rounded-xl font-semibold text-lg hover:bg-gray-100 transition-all hover:scale-105 shadow-xl">
                 <?php echo htmlspecialchars($buttonText); ?>
-                <span class="material-symbols-outlined">arrow_forward</span>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
             </a>
         <?php endif; ?>
     </div>

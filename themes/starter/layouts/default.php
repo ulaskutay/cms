@@ -15,11 +15,12 @@
     <title><?php echo esc_html($pageTitle); ?></title>
     
     <?php 
-    // Meta Description: Önce sayfa meta description'ı, yoksa SEO description
-    $metaDesc = $meta_description ?? $seoDescription;
-    if (!empty($metaDesc)): ?>
-    <meta name="description" content="<?php echo esc_attr($metaDesc); ?>">
-    <?php endif;
+    // Meta Description: Önce sayfa meta description'ı, yoksa SEO description, yoksa site description
+    $siteDescription = get_option('site_description', '');
+    $defaultMetaDesc = 'Profesyonel web tasarım ve yazılım hizmetleri. Modern, hızlı ve SEO uyumlu web siteleri.';
+    $metaDesc = $meta_description ?? ($seoDescription ?: ($siteDescription ?: $defaultMetaDesc));
+    ?>
+    <meta name="description" content="<?php echo esc_attr($metaDesc); ?>"><?php
     
     // Meta Author: SEO author
     if (!empty($seoAuthor)): ?>
@@ -38,30 +39,27 @@
     <link rel="apple-touch-icon" href="<?php echo esc_url($favicon); ?>">
     <?php endif; ?>
     
-    <!-- Preload Material Symbols Font for Faster Icon Loading -->
-    <link rel="preload" href="<?php echo ViewRenderer::assetUrl('assets/fonts/material-symbols/material-symbols-outlined.woff2'); ?>" as="font" type="font/woff2" crossorigin="anonymous">
+    <!-- Preload only critical fonts (Inter 400 for body text) -->
+    <link rel="preload" href="<?php echo ViewRenderer::assetUrl('assets/fonts/inter/inter-400.woff2'); ?>" as="font" type="font/woff2" crossorigin="anonymous">
     
-    <!-- Preload Fonts CSS to prevent render-blocking -->
-    <link rel="preload" href="<?php echo ViewRenderer::assetUrl('assets/css/fonts.css'); ?>" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript><link rel="stylesheet" href="<?php echo ViewRenderer::assetUrl('assets/css/fonts.css'); ?>"></noscript>
-    
-    <!-- Material Symbols Base Styles (Inline for Faster Rendering) -->
+    <!-- Inline Font Definitions - Minimal weights for performance -->
     <style>
-        .material-symbols-outlined {
-            font-family: 'Material Symbols Outlined';
-            font-weight: normal;
+        /* Inter Font - Body text (400 only, 600/700 mapped to 400 with font-synthesis) */
+        @font-face {
+            font-family: 'Inter';
+            src: url('<?php echo ViewRenderer::assetUrl('assets/fonts/inter/inter-400.woff2'); ?>') format('woff2');
+            font-weight: 400 700;
             font-style: normal;
-            font-size: 24px;
-            line-height: 1;
-            letter-spacing: normal;
-            text-transform: none;
-            display: inline-block;
-            white-space: nowrap;
-            word-wrap: normal;
-            direction: ltr;
-            -webkit-font-feature-settings: 'liga';
-            -webkit-font-smoothing: antialiased;
-            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            font-display: swap;
+        }
+        
+        /* Poppins Font - Headings only (600 weight covers 600-700 range) */
+        @font-face {
+            font-family: 'Poppins';
+            src: url('<?php echo ViewRenderer::assetUrl('assets/fonts/poppins/poppins-600.woff2'); ?>') format('woff2');
+            font-weight: 600 700;
+            font-style: normal;
+            font-display: swap;
         }
     </style>
     
@@ -69,6 +67,23 @@
     <?php if ($themeLoader): ?>
         <?php echo $themeLoader->getCssVariablesTag(); ?>
     <?php endif; ?>
+    
+    <!-- Critical CSS - Prevent Layout Shift -->
+    <style>
+        /* Prevent FOUC - Hide body until Tailwind loads */
+        body:not(.tw-loaded) {
+            visibility: hidden;
+        }
+        body.tw-loaded {
+            visibility: visible;
+        }
+        
+        /* Header critical styles */
+        header {
+            min-height: 80px;
+            position: relative;
+        }
+    </style>
     
     <style>
         :root {
@@ -91,6 +106,11 @@
         
         h1, h2, h3, h4, h5, h6 {
             font-family: var(--font-heading);
+        }
+        
+        /* Fix H1UserAgentFontSizeInSection deprecation warning */
+        section h1 {
+            font-size: inherit;
         }
         
         .bg-primary { background-color: var(--color-primary); }
@@ -146,6 +166,9 @@
     <link rel="preload" href="<?php echo $cssUrl; ?>" as="style">
     <link rel="stylesheet" href="<?php echo $cssUrl; ?>">
     <?php endif; ?>
+    
+    <!-- Preload Tailwind CSS JS for faster loading -->
+    <link rel="preload" href="<?php echo ViewRenderer::assetUrl('assets/js/tailwind.min.js'); ?>" as="script">
     
     <!-- Additional Styles -->
     <?php echo $sections['styles'] ?? ''; ?>
@@ -229,7 +252,7 @@
     <!-- Back to Top Button -->
     <?php if ($themeLoader && $themeLoader->getCustomSetting('show_back_to_top', true)): ?>
     <button id="back-to-top" class="fixed bottom-6 right-6 p-3 bg-primary text-white rounded-full shadow-lg opacity-0 invisible transition-all duration-300 hover:scale-110 z-50">
-        <span class="material-symbols-outlined">arrow_upward</span>
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
     </button>
     <?php endif; ?>
     
@@ -250,8 +273,25 @@
     </script>
     <?php endif; ?>
     
-    <!-- Tailwind CSS - Load at end of body to prevent render-blocking -->
-    <script src="<?php echo ViewRenderer::assetUrl('assets/js/tailwind.min.js'); ?>"></script>
+    <!-- Tailwind CSS - Load synchronously to prevent layout shift -->
+    <script>
+        // Mark body as loaded once Tailwind processes
+        (function() {
+            const script = document.createElement('script');
+            script.src = '<?php echo ViewRenderer::assetUrl('assets/js/tailwind.min.js'); ?>';
+            script.onload = function() {
+                // Small delay to ensure Tailwind has processed
+                setTimeout(function() {
+                    document.body.classList.add('tw-loaded');
+                }, 10);
+            };
+            script.onerror = function() {
+                // Even if script fails, show content
+                document.body.classList.add('tw-loaded');
+            };
+            document.head.appendChild(script);
+        })();
+    </script>
     
     <!-- Privacy-Friendly Analytics -->
     <script src="/public/frontend/js/analytics.js" defer></script>

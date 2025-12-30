@@ -25,10 +25,17 @@
         menuBtn.addEventListener('click', function() {
             mobileMenu.classList.toggle('hidden');
             
-            // Update button icon
-            const icon = menuBtn.querySelector('.material-symbols-outlined');
-            if (icon) {
-                icon.textContent = mobileMenu.classList.contains('hidden') ? 'menu' : 'close';
+            // Update button icon (SVG version)
+            const menuIcon = menuBtn.querySelector('.menu-icon');
+            const closeIcon = menuBtn.querySelector('.close-icon');
+            if (menuIcon && closeIcon) {
+                if (mobileMenu.classList.contains('hidden')) {
+                    menuIcon.classList.remove('hidden');
+                    closeIcon.classList.add('hidden');
+                } else {
+                    menuIcon.classList.add('hidden');
+                    closeIcon.classList.remove('hidden');
+                }
             }
         });
         
@@ -36,8 +43,12 @@
         document.addEventListener('click', function(e) {
             if (!menuBtn.contains(e.target) && !mobileMenu.contains(e.target)) {
                 mobileMenu.classList.add('hidden');
-                const icon = menuBtn.querySelector('.material-symbols-outlined');
-                if (icon) icon.textContent = 'menu';
+                const menuIcon = menuBtn.querySelector('.menu-icon');
+                const closeIcon = menuBtn.querySelector('.close-icon');
+                if (menuIcon && closeIcon) {
+                    menuIcon.classList.remove('hidden');
+                    closeIcon.classList.add('hidden');
+                }
             }
         });
     }

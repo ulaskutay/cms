@@ -124,26 +124,32 @@ $pageTitle = $title ?? 'Admin Panel';
     <!-- Custom CSS -->
     <link href="<?php echo rtrim(site_url(), '/') . '/admin/css/admin-dashboard.css'; ?>" rel="stylesheet"/>
     
-    <!-- Dark Mode Toggle Script -->
-    <script src="<?php echo rtrim(site_url(), '/') . '/admin/js/dark-mode.js'; ?>"></script>
+    <!-- Tailwind CSS - Load in head before config -->
+    <script src="<?php echo ViewRenderer::assetUrl('assets/js/tailwind-admin.min.js'); ?>"></script>
     
+    <!-- Tailwind Config - Must be after Tailwind script -->
     <script>
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    colors: {
-                        "primary": "#137fec",
-                        "background-light": "#f6f7f8",
-                        "background-dark": "#101922",
-                    },
-                    fontFamily: {
-                        "display": ["Inter", "sans-serif"]
+        if (typeof tailwind !== 'undefined') {
+            tailwind.config = {
+                darkMode: "class",
+                theme: {
+                    extend: {
+                        colors: {
+                            "primary": "#137fec",
+                            "background-light": "#f6f7f8",
+                            "background-dark": "#101922",
+                        },
+                        fontFamily: {
+                            "display": ["Inter", "sans-serif"]
+                        },
                     },
                 },
-            },
+            }
         }
     </script>
+    
+    <!-- Dark Mode Toggle Script -->
+    <script src="<?php echo rtrim(site_url(), '/') . '/admin/js/dark-mode.js'; ?>"></script>
 </head>
 <body class="font-display bg-background-light dark:bg-background-dark">
 

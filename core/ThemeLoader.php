@@ -535,6 +535,22 @@ class ThemeLoader {
     }
     
     /**
+     * Logo genişliğini getir (CLS için)
+     */
+    public function getLogoWidth(): ?int {
+        $width = $this->getBranding('logo_width');
+        return $width ? (int)$width : null;
+    }
+    
+    /**
+     * Logo yüksekliğini getir (CLS için)
+     */
+    public function getLogoHeight(): ?int {
+        $height = $this->getBranding('logo_height');
+        return $height ? (int)$height : null;
+    }
+    
+    /**
      * Favicon URL'sini getir  
      */
     public function getFavicon(): ?string {

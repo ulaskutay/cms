@@ -189,8 +189,30 @@ class Media extends Model {
             return ['success' => false, 'message' => 'Dosya yüklenirken bir hata oluştu.'];
         }
         
+        // Görsel ise WebP'ye dönüştür (SVG hariç)
+        $originalSize = $file['size'];
+        $finalMimeType = $mimeType;
+        $finalExtension = $extension;
+        $finalFilename = $filename;
+        $finalFilepath = $filepath;
+        
+        if (strpos($mimeType, 'image/') === 0 && $mimeType !== 'image/svg+xml' && $mimeType !== 'image/webp') {
+            $webpResult = $this->convertToWebP($filepath);
+            if ($webpResult['success']) {
+                // Orijinal dosyayı sil
+                @unlink($filepath);
+                
+                // WebP dosyasını kullan
+                $finalFilepath = $webpResult['filepath'];
+                $finalFilename = $webpResult['filename'];
+                $finalMimeType = 'image/webp';
+                $finalExtension = 'webp';
+                $originalSize = $webpResult['size'];
+            }
+        }
+        
         // Göreli yol
-        $relativePath = $folder . '/' . $yearMonth . '/' . $filename;
+        $relativePath = $folder . '/' . $yearMonth . '/' . $finalFilename;
         
         // URL oluştur
         $fileUrl = site_url('uploads/' . $relativePath);
@@ -198,10 +220,10 @@ class Media extends Model {
         // Veritabanına kaydet
         $mediaData = [
             'user_id' => $userId,
-            'filename' => $filename,
+            'filename' => $finalFilename,
             'original_name' => $file['name'],
-            'mime_type' => $mimeType,
-            'file_size' => $file['size'],
+            'mime_type' => $finalMimeType,
+            'file_size' => $originalSize,
             'file_path' => $relativePath,
             'file_url' => $fileUrl,
             'alt_text' => null,
@@ -212,7 +234,7 @@ class Media extends Model {
         
         if (!$mediaId) {
             // Veritabanı hatası durumunda dosyayı sil
-            @unlink($filepath);
+            @unlink($finalFilepath);
             return ['success' => false, 'message' => 'Veritabanı kaydı oluşturulamadı.'];
         }
         
@@ -220,7 +242,7 @@ class Media extends Model {
         
         return [
             'success' => true,
-            'message' => 'Dosya başarıyla yüklendi.',
+            'message' => 'Dosya başarıyla yüklendi.' . (isset($webpResult) && $webpResult['success'] ? ' (WebP formatına dönüştürüldü)' : ''),
             'media' => $media
         ];
     }
@@ -409,6 +431,189 @@ class Media extends Model {
     public function getRecent($limit = 10) {
         $sql = "SELECT * FROM `{$this->table}` ORDER BY `created_at` DESC LIMIT {$limit}";
         return $this->db->fetchAll($sql);
+    }
+    
+    /**
+     * Görseli WebP formatına dönüştür
+     * @param string $sourcePath Kaynak dosya yolu
+     * @param int $quality WebP kalitesi (0-100, varsayılan: 85)
+     * @return array Başarı durumu ve yeni dosya bilgileri
+     */
+    private function convertToWebP($sourcePath, $quality = 85) {
+        // GD kütüphanesi kontrolü
+        if (!function_exists('imagecreatefromjpeg') && !function_exists('imagecreatefrompng') && !function_exists('imagecreatefromgif')) {
+            return ['success' => false, 'message' => 'GD kütüphanesi bulunamadı.'];
+        }
+        
+        // WebP desteği kontrolü
+        if (!function_exists('imagewebp')) {
+            return ['success' => false, 'message' => 'WebP desteği bulunamadı.'];
+        }
+        
+        // Dosya var mı kontrol et
+        if (!file_exists($sourcePath)) {
+            return ['success' => false, 'message' => 'Kaynak dosya bulunamadı.'];
+        }
+        
+        // MIME tipini belirle
+        $mimeType = mime_content_type($sourcePath);
+        if (!$mimeType && function_exists('finfo_file')) {
+            $finfo = finfo_open(FILEINFO_MIME_TYPE);
+            $mimeType = finfo_file($finfo, $sourcePath);
+            finfo_close($finfo);
+        }
+        
+        // Görsel kaynağını yükle
+        $image = null;
+        switch ($mimeType) {
+            case 'image/jpeg':
+            case 'image/jpg':
+                if (function_exists('imagecreatefromjpeg')) {
+                    $image = @imagecreatefromjpeg($sourcePath);
+                }
+                break;
+            case 'image/png':
+                if (function_exists('imagecreatefrompng')) {
+                    $image = @imagecreatefrompng($sourcePath);
+                    // PNG şeffaflığını koru
+                    imagealphablending($image, false);
+                    imagesavealpha($image, true);
+                }
+                break;
+            case 'image/gif':
+                if (function_exists('imagecreatefromgif')) {
+                    $image = @imagecreatefromgif($sourcePath);
+                }
+                break;
+            default:
+                return ['success' => false, 'message' => 'Desteklenmeyen görsel formatı.'];
+        }
+        
+        if (!$image) {
+            return ['success' => false, 'message' => 'Görsel yüklenemedi.'];
+        }
+        
+        // WebP dosya yolu oluştur
+        $pathInfo = pathinfo($sourcePath);
+        $webpPath = $pathInfo['dirname'] . '/' . $pathInfo['filename'] . '.webp';
+        
+        // WebP'ye dönüştür
+        $success = false;
+        if (function_exists('imagewebp')) {
+            // PNG için kalite 0-9 arası, JPEG için 0-100 arası
+            // PHP'nin imagewebp fonksiyonu 0-100 arası kalite kullanır
+            $success = @imagewebp($image, $webpPath, $quality);
+        }
+        
+        // Belleği temizle
+        imagedestroy($image);
+        
+        if (!$success || !file_exists($webpPath)) {
+            return ['success' => false, 'message' => 'WebP dönüştürme başarısız oldu.'];
+        }
+        
+        // Dosya boyutunu al
+        $webpSize = filesize($webpPath);
+        $webpFilename = $pathInfo['filename'] . '.webp';
+        
+        return [
+            'success' => true,
+            'filepath' => $webpPath,
+            'filename' => $webpFilename,
+            'size' => $webpSize,
+            'message' => 'WebP dönüştürme başarılı.'
+        ];
+    }
+    
+    /**
+     * Mevcut görselleri WebP'ye dönüştür (toplu işlem)
+     * @param int $limit İşlenecek maksimum görsel sayısı
+     * @param bool $deleteOriginal Orijinal dosyayı sil (varsayılan: true)
+     * @return array İşlem sonuçları
+     */
+    public function convertExistingImagesToWebP($limit = 100, $deleteOriginal = true) {
+        // WebP desteği kontrolü
+        if (!function_exists('imagewebp')) {
+            return [
+                'success' => false,
+                'message' => 'WebP desteği bulunamadı. PHP GD kütüphanesi WebP desteği ile derlenmiş olmalıdır.'
+            ];
+        }
+        
+        // WebP olmayan görselleri getir (SVG hariç)
+        $sql = "SELECT * FROM `{$this->table}` 
+                WHERE `mime_type` LIKE 'image/%' 
+                AND `mime_type` != 'image/webp' 
+                AND `mime_type` != 'image/svg+xml'
+                ORDER BY `created_at` DESC 
+                LIMIT {$limit}";
+        
+        $images = $this->db->fetchAll($sql);
+        
+        if (empty($images)) {
+            return [
+                'success' => true,
+                'message' => 'Dönüştürülecek görsel bulunamadı.',
+                'converted' => 0,
+                'failed' => 0,
+                'saved_space' => 0
+            ];
+        }
+        
+        $converted = 0;
+        $failed = 0;
+        $savedSpace = 0;
+        $errors = [];
+        
+        foreach ($images as $image) {
+            $filePath = __DIR__ . '/../../public/uploads/' . $image['file_path'];
+            
+            if (!file_exists($filePath)) {
+                $failed++;
+                $errors[] = "Dosya bulunamadı: {$image['filename']}";
+                continue;
+            }
+            
+            $originalSize = filesize($filePath);
+            $result = $this->convertToWebP($filePath);
+            
+            if ($result['success']) {
+                // Veritabanını güncelle
+                $newRelativePath = dirname($image['file_path']) . '/' . $result['filename'];
+                $newFileUrl = site_url('uploads/' . $newRelativePath);
+                
+                $updateData = [
+                    'filename' => $result['filename'],
+                    'mime_type' => 'image/webp',
+                    'file_size' => $result['size'],
+                    'file_path' => $newRelativePath,
+                    'file_url' => $newFileUrl
+                ];
+                
+                $this->update($image['id'], $updateData);
+                
+                // Orijinal dosyayı sil
+                if ($deleteOriginal) {
+                    @unlink($filePath);
+                }
+                
+                $converted++;
+                $savedSpace += ($originalSize - $result['size']);
+            } else {
+                $failed++;
+                $errors[] = "{$image['filename']}: {$result['message']}";
+            }
+        }
+        
+        return [
+            'success' => true,
+            'message' => "{$converted} görsel WebP'ye dönüştürüldü, {$failed} görsel dönüştürülemedi.",
+            'converted' => $converted,
+            'failed' => $failed,
+            'saved_space' => $savedSpace,
+            'formatted_saved_space' => $this->formatFileSize($savedSpace),
+            'errors' => $errors
+        ];
     }
 }
 

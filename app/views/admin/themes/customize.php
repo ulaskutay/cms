@@ -239,6 +239,39 @@ if (isset($settings['custom']['footer_bottom_links']['value'])) {
                                 </div>
                             </div>
                             <input type="hidden" id="siteLogo" value="<?php echo esc_attr($currentLogo); ?>">
+                            
+                            <!-- Logo Boyutları -->
+                            <div class="mt-4 pt-4 border-t border-slate-700/50">
+                                <label class="block text-xs font-medium text-slate-300 mb-3">Logo Boyutları (CLS için önerilir)</label>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="block text-[10px] text-slate-400 mb-1">Genişlik (px)</label>
+                                        <input type="number" 
+                                               id="logoWidth" 
+                                               name="branding[logo_width]" 
+                                               value="<?php echo esc_attr($settings['branding']['logo_width']['value'] ?? ''); ?>" 
+                                               placeholder="Otomatik"
+                                               min="20" 
+                                               max="500"
+                                               class="w-full px-3 py-2 input-field rounded-lg text-sm">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] text-slate-400 mb-1">Yükseklik (px)</label>
+                                        <input type="number" 
+                                               id="logoHeight" 
+                                               name="branding[logo_height]" 
+                                               value="<?php echo esc_attr($settings['branding']['logo_height']['value'] ?? ''); ?>" 
+                                               placeholder="Otomatik"
+                                               min="20" 
+                                               max="200"
+                                               class="w-full px-3 py-2 input-field rounded-lg text-sm">
+                                    </div>
+                                </div>
+                                <p class="text-[10px] text-slate-500 mt-2">
+                                    <span class="material-symbols-outlined text-xs align-middle">info</span>
+                                    Sayfa yükleme kaymasını (CLS) önlemek için boyutları belirtin
+                                </p>
+                            </div>
                         </div>
                         
                         <!-- Favicon -->
@@ -1087,6 +1120,8 @@ function collectSettings() {
     // Branding
     settings.branding.site_logo = document.getElementById('siteLogo')?.value || '';
     settings.branding.site_favicon = document.getElementById('siteFavicon')?.value || '';
+    settings.branding.logo_width = document.getElementById('logoWidth')?.value || '';
+    settings.branding.logo_height = document.getElementById('logoHeight')?.value || '';
     
     // Custom settings (footer, header, etc.)
     document.querySelectorAll('[name^="custom["]').forEach(input => {
