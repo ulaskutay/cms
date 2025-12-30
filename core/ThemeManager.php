@@ -591,8 +591,13 @@ class ThemeManager {
                     ];
                 }
                 
-                // Değeri ayarla
-                $settings[$group][$key]['value'] = $option['option_value'];
+                // Değeri ayarla - JSON ise decode et
+                $value = $option['option_value'];
+                $decoded = json_decode($value, true);
+                if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                    $value = $decoded;
+                }
+                $settings[$group][$key]['value'] = $value;
             }
         }
         
@@ -621,7 +626,13 @@ class ThemeManager {
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
         
         if ($result) {
-            return $result['option_value'];
+            $value = $result['option_value'];
+            // JSON ise decode et
+            $decoded = json_decode($value, true);
+            if (json_last_error() === JSON_ERROR_NONE && (is_array($decoded) || is_object($decoded))) {
+                return $decoded;
+            }
+            return $value;
         }
         
         // Varsayılan değeri schema'dan al
@@ -687,14 +698,10 @@ class ThemeManager {
             // Normal ayarları kaydet
             // UNIQUE KEY (theme_id, option_key) olduğu için, aynı key için sadece bir kayıt olabilir
             // Bu yüzden her key için kontrol edip INSERT veya UPDATE yapıyoruz
-            $stmtInsert = $this->db->prepare("
+            $stmtInsertOrUpdate = $this->db->prepare("
                 INSERT INTO theme_options (theme_id, option_group, option_key, option_value)
                 VALUES (?, ?, ?, ?)
-            ");
-            $stmtUpdate = $this->db->prepare("
-                UPDATE theme_options 
-                SET option_value = ?, option_group = ?
-                WHERE theme_id = ? AND option_key = ?
+                ON DUPLICATE KEY UPDATE option_value = VALUES(option_value), option_group = VALUES(option_group)
             ");
             
             foreach ($settings as $group => $groupSettings) {
@@ -702,19 +709,8 @@ class ThemeManager {
                     foreach ($groupSettings as $key => $value) {
                         $valueToSave = is_array($value) ? json_encode($value) : (string)$value;
                         
-                        // Mevcut kaydı kontrol et (her seferinde yeni statement kullan)
-                        $stmtCheck = $this->db->prepare("SELECT id, option_group FROM theme_options WHERE theme_id = ? AND option_key = ? LIMIT 1");
-                        $stmtCheck->execute([$theme['id'], $key]);
-                        $existing = $stmtCheck->fetch(PDO::FETCH_ASSOC);
-                        $stmtCheck->closeCursor(); // Cursor'ı kapat
-                        
-                        if ($existing) {
-                            // Güncelle (hem value hem group)
-                            $stmtUpdate->execute([$valueToSave, $group, $theme['id'], $key]);
-                        } else {
-                            // Yeni ekle
-                            $stmtInsert->execute([$theme['id'], $group, $key, $valueToSave]);
-                        }
+                        // INSERT ... ON DUPLICATE KEY UPDATE kullanarak tek sorguda hem ekleme hem güncelleme yap
+                        $stmtInsertOrUpdate->execute([$theme['id'], $group, $key, $valueToSave]);
                     }
                 }
             }
@@ -734,7 +730,8 @@ class ThemeManager {
         } catch (Exception $e) {
             $this->db->rollBack();
             error_log("Theme settings save error: " . $e->getMessage());
-            return false;
+            error_log("Theme settings save error trace: " . $e->getTraceAsString());
+            throw $e; // Exception'ı üst katmana ileterek daha iyi hata mesajı gösterilmesini sağla
         }
     }
     
@@ -743,9 +740,9 @@ class ThemeManager {
      */
     private function saveHomepageSections(array $sections, int $themeId): void {
         foreach ($sections as $sectionId => $sectionData) {
-            // Section var mı kontrol et
-            $stmt = $this->db->prepare("SELECT id FROM page_sections WHERE page_type = 'home' AND section_id = ?");
-            $stmt->execute([$sectionId]);
+            // Section var mı kontrol et (theme_id ile birlikte)
+            $stmt = $this->db->prepare("SELECT id FROM page_sections WHERE theme_id = ? AND page_type = 'home' AND section_id = ? LIMIT 1");
+            $stmt->execute([$themeId, $sectionId]);
             $existing = $stmt->fetch(PDO::FETCH_ASSOC);
             
             $title = $sectionData['title'] ?? '';
@@ -758,8 +755,15 @@ class ThemeManager {
             $itemsJson = json_encode($items);
             
             // title, subtitle, content, enabled, items dışındaki alanları settings olarak kaydet
-            $settingsData = array_diff_key($sectionData, array_flip(['title', 'subtitle', 'content', 'enabled', 'items']));
-            $settingsJson = json_encode($settingsData);
+            // settings key'i zaten nested array olarak geliyor, bu yüzden direkt kullanabiliriz
+            $settingsData = [];
+            if (isset($sectionData['settings']) && is_array($sectionData['settings'])) {
+                $settingsData = $sectionData['settings'];
+            } else {
+                // Eğer settings key'i yoksa, diğer alanları settings olarak kaydet
+                $settingsData = array_diff_key($sectionData, array_flip(['title', 'subtitle', 'content', 'enabled', 'items']));
+            }
+            $settingsJson = json_encode($settingsData, JSON_UNESCAPED_UNICODE);
             
             if ($existing) {
                 // Güncelle

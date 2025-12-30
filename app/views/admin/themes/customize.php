@@ -17,18 +17,18 @@ if (isset($themeManager)) {
             $sectionId = $section['section_id'] ?? '';
             if ($sectionId) {
                 // settings zaten array ise kullan, değilse JSON decode et
-                $settings = [];
+                $sectionSettings = [];
                 if (isset($section['settings'])) {
                     if (is_array($section['settings'])) {
-                        $settings = $section['settings'];
+                        $sectionSettings = $section['settings'];
                     } else {
                         $decoded = json_decode($section['settings'], true);
-                        $settings = is_array($decoded) ? $decoded : [];
+                        $sectionSettings = is_array($decoded) ? $decoded : [];
                     }
                 }
                 
                 $pageSections[$sectionId] = array_merge(
-                    $settings,
+                    $sectionSettings,
                     ['enabled' => ($section['is_active'] ?? 1) == 1]
                 );
                 $pageSections[$sectionId]['title'] = $section['title'] ?? '';
@@ -49,6 +49,29 @@ if (isset($themeManager)) {
 // Mevcut ayarları al
 $currentLogo = $settings['branding']['site_logo']['value'] ?? '';
 $currentFavicon = $settings['branding']['site_favicon']['value'] ?? '';
+
+// Sözleşmeleri getir (footer alt linkleri için)
+$agreements = [];
+if (class_exists('Agreement')) {
+    try {
+        $agreementModel = new Agreement();
+        $agreements = $agreementModel->getPublished();
+    } catch (Exception $e) {
+        error_log("Agreements fetch error: " . $e->getMessage());
+    }
+}
+
+// Footer alt link ayarları
+$footerBottomLinks = [];
+if (isset($settings['custom']['footer_bottom_links']['value'])) {
+    $value = $settings['custom']['footer_bottom_links']['value'];
+    if (is_array($value)) {
+        $footerBottomLinks = $value;
+    } elseif (is_string($value)) {
+        $decoded = json_decode($value, true);
+        $footerBottomLinks = is_array($decoded) ? $decoded : [];
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="tr">
@@ -378,7 +401,7 @@ $currentFavicon = $settings['branding']['site_favicon']['value'] ?? '';
                     </div>
                     <div class="flex-1 text-left">
                         <span class="text-sm font-semibold block">Footer</span>
-                        <span class="text-xs text-slate-400">Alt bilgi ve sosyal medya</span>
+                        <span class="text-xs text-slate-400">Alt bilgi ayarları</span>
                     </div>
                     <span class="material-symbols-outlined text-slate-400 section-arrow transition-transform">expand_more</span>
                 </button>
@@ -402,43 +425,74 @@ $currentFavicon = $settings['branding']['site_favicon']['value'] ?? '';
                                 <input type="checkbox" name="footer[show_social]" value="1" <?php echo ($settings['footer']['show_social']['value'] ?? true) ? 'checked' : ''; ?> class="w-5 h-5 rounded bg-slate-700 border-slate-600 text-indigo-500 focus:ring-indigo-500/30">
                                 <span class="text-sm">Sosyal medya ikonlarını göster</span>
                             </label>
+                            <p class="text-xs text-slate-400 mt-2">Not: Sosyal medya linkleri Site Ayarları > Sosyal Medya bölümünden yönetilir.</p>
                         </div>
                         
-                        <!-- Sosyal Medya -->
-                        <div class="glass rounded-xl p-4 space-y-3">
-                            <label class="block text-xs font-medium text-slate-300 mb-1">Sosyal Medya Linkleri</label>
-                            <div class="space-y-3">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-9 h-9 rounded-lg bg-blue-500/20 flex items-center justify-center flex-shrink-0">
-                                        <svg class="w-4 h-4 text-blue-400" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                        <!-- Footer Alt Linkler -->
+                        <div class="glass rounded-xl p-4 space-y-4">
+                            <h3 class="text-sm font-semibold text-slate-200 mb-3">Alt Linkler (Sözleşmeler)</h3>
+                            <p class="text-xs text-slate-400 mb-4">Footer'ın alt kısmında gösterilecek sözleşme linklerini seçin.</p>
+                            
+                            <div id="footer-bottom-links-container" class="space-y-3">
+                                <?php 
+                                $linkIndex = 0;
+                                if (!empty($footerBottomLinks)): 
+                                    foreach ($footerBottomLinks as $link): 
+                                ?>
+                                <div class="footer-bottom-link-item flex items-center gap-3 p-3 rounded-lg bg-slate-800/50">
+                                    <div class="flex-1 grid grid-cols-2 gap-3">
+                                        <div>
+                                            <label class="block text-xs text-slate-400 mb-1.5">Link Metni</label>
+                                            <input type="text" name="custom[footer_bottom_links][<?php echo $linkIndex; ?>][text]" 
+                                                   value="<?php echo esc_attr($link['text'] ?? ''); ?>" 
+                                                   placeholder="Gizlilik Politikası" 
+                                                   class="w-full px-3 py-2 input-field rounded-lg text-sm">
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs text-slate-400 mb-1.5">Sözleşme Seç</label>
+                                            <select name="custom[footer_bottom_links][<?php echo $linkIndex; ?>][agreement_id]" 
+                                                    class="w-full px-3 py-2 input-field rounded-lg text-sm footer-agreement-select">
+                                                <option value="">Özel URL kullan</option>
+                                                <?php foreach ($agreements as $agreement): ?>
+                                                <option value="<?php echo $agreement['id']; ?>" 
+                                                        data-slug="<?php echo esc_attr($agreement['slug']); ?>"
+                                                        <?php echo (isset($link['agreement_id']) && $link['agreement_id'] == $agreement['id']) ? 'selected' : ''; ?>>
+                                                    <?php 
+                                                    $typeLabel = $agreement['type'];
+                                                    if (class_exists('Agreement') && isset(Agreement::$types[$agreement['type']])) {
+                                                        $typeLabel = Agreement::$types[$agreement['type']];
+                                                    }
+                                                    echo esc_html($agreement['title'] . ' (' . $typeLabel . ')'); 
+                                                    ?>
+                                                </option>
+                                                <?php endforeach; ?>
+                                            </select>
+                                        </div>
                                     </div>
-                                    <input type="text" name="social[facebook]" value="<?php echo esc_attr($settings['social']['facebook']['value'] ?? ''); ?>" placeholder="Facebook URL" class="flex-1 px-4 py-2 input-field rounded-lg text-sm">
-                                </div>
-                                <div class="flex items-center gap-3">
-                                    <div class="w-9 h-9 rounded-lg bg-sky-500/20 flex items-center justify-center flex-shrink-0">
-                                        <svg class="w-4 h-4 text-sky-400" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                                    <div class="flex-1">
+                                        <label class="block text-xs text-slate-400 mb-1.5">Özel URL (Sözleşme seçilmediyse)</label>
+                                        <input type="text" name="custom[footer_bottom_links][<?php echo $linkIndex; ?>][url]" 
+                                               value="<?php echo esc_attr($link['url'] ?? ''); ?>" 
+                                               placeholder="/gizlilik-politikasi" 
+                                               class="w-full px-3 py-2 input-field rounded-lg text-sm">
                                     </div>
-                                    <input type="text" name="social[twitter]" value="<?php echo esc_attr($settings['social']['twitter']['value'] ?? ''); ?>" placeholder="X (Twitter) URL" class="flex-1 px-4 py-2 input-field rounded-lg text-sm">
+                                    <button type="button" onclick="removeFooterLink(this)" class="p-2 text-red-400 hover:bg-red-500/10 rounded-lg transition-colors">
+                                        <span class="material-symbols-outlined text-lg">delete</span>
+                                    </button>
                                 </div>
-                                <div class="flex items-center gap-3">
-                                    <div class="w-9 h-9 rounded-lg bg-pink-500/20 flex items-center justify-center flex-shrink-0">
-                                        <svg class="w-4 h-4 text-pink-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
-                                    </div>
-                                    <input type="text" name="social[instagram]" value="<?php echo esc_attr($settings['social']['instagram']['value'] ?? ''); ?>" placeholder="Instagram URL" class="flex-1 px-4 py-2 input-field rounded-lg text-sm">
-                                </div>
-                                <div class="flex items-center gap-3">
-                                    <div class="w-9 h-9 rounded-lg bg-blue-600/20 flex items-center justify-center flex-shrink-0">
-                                        <svg class="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
-                                    </div>
-                                    <input type="text" name="social[linkedin]" value="<?php echo esc_attr($settings['social']['linkedin']['value'] ?? ''); ?>" placeholder="LinkedIn URL" class="flex-1 px-4 py-2 input-field rounded-lg text-sm">
-                                </div>
-                                <div class="flex items-center gap-3">
-                                    <div class="w-9 h-9 rounded-lg bg-red-500/20 flex items-center justify-center flex-shrink-0">
-                                        <svg class="w-4 h-4 text-red-400" fill="currentColor" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
-                                    </div>
-                                    <input type="text" name="social[youtube]" value="<?php echo esc_attr($settings['social']['youtube']['value'] ?? ''); ?>" placeholder="YouTube URL" class="flex-1 px-4 py-2 input-field rounded-lg text-sm">
-                                </div>
+                                <?php 
+                                    $linkIndex++;
+                                    endforeach; 
+                                endif; 
+                                ?>
                             </div>
+                            
+                            <button type="button" onclick="addFooterLink()" class="w-full px-4 py-2.5 bg-indigo-500/20 text-indigo-400 rounded-lg hover:bg-indigo-500/30 transition-colors flex items-center justify-center gap-2 text-sm">
+                                <span class="material-symbols-outlined text-lg">add</span>
+                                Link Ekle
+                            </button>
+                            
+                            <p class="text-xs text-slate-400 mt-2">💡 İpucu: Sözleşme seçerseniz URL otomatik oluşturulur. Özel URL de girebilirsiniz.</p>
                         </div>
                     </div>
                 </div>
@@ -958,7 +1012,7 @@ function showToast(title, message, type = 'success') {
 
 // Collect Settings
 function collectSettings() {
-    const settings = { colors: {}, fonts: {}, custom: {}, branding: {}, header: {}, footer: {}, social: {}, sections: {} };
+    const settings = { colors: {}, fonts: {}, custom: {}, branding: {}, header: {}, footer: {}, sections: {} };
     
     // Colors
     document.querySelectorAll('[name^="colors["]').forEach(input => {
@@ -986,11 +1040,7 @@ function collectSettings() {
         settings.footer[key] = input.type === 'checkbox' ? (input.checked ? '1' : '0') : input.value;
     });
     
-    // Social
-    document.querySelectorAll('[name^="social["]').forEach(input => {
-        const key = input.name.match(/\[([^\]]+)\]/)[1];
-        settings.social[key] = input.value;
-    });
+    // Social - Kaldırıldı (Site ayarlarından yönetiliyor)
     
     // Sections
     document.querySelectorAll('[name^="sections["]').forEach(input => {
@@ -1037,6 +1087,39 @@ function collectSettings() {
     // Branding
     settings.branding.site_logo = document.getElementById('siteLogo')?.value || '';
     settings.branding.site_favicon = document.getElementById('siteFavicon')?.value || '';
+    
+    // Custom settings (footer, header, etc.)
+    document.querySelectorAll('[name^="custom["]').forEach(input => {
+        // Footer bottom links için özel işleme
+        const footerLinkMatch = input.name.match(/custom\[footer_bottom_links\]\[(\d+)\]\[(\w+)\]/);
+        if (footerLinkMatch) {
+            const [, linkIndex, linkKey] = footerLinkMatch;
+            if (!settings.custom.footer_bottom_links) settings.custom.footer_bottom_links = {};
+            if (!settings.custom.footer_bottom_links[linkIndex]) settings.custom.footer_bottom_links[linkIndex] = {};
+            settings.custom.footer_bottom_links[linkIndex][linkKey] = input.value;
+            return;
+        }
+        
+        // Diğer custom ayarlar
+        const nameMatch = input.name.match(/custom\[([^\]]+)\]$/);
+        if (!nameMatch) return;
+        
+        const key = nameMatch[1];
+        settings.custom[key] = input.type === 'checkbox' ? (input.checked ? '1' : '0') : input.value;
+    });
+    
+    // Footer bottom links'i array'e çevir ve filtrele
+    if (settings.custom.footer_bottom_links && typeof settings.custom.footer_bottom_links === 'object') {
+        const linksArray = Object.keys(settings.custom.footer_bottom_links)
+            .sort((a, b) => parseInt(a) - parseInt(b))
+            .map(key => settings.custom.footer_bottom_links[key])
+            .filter(link => link && (link.text || link.url || link.agreement_id));
+        // Boş array olsa bile kaydet (kullanıcı tüm linkleri silmiş olabilir)
+        settings.custom.footer_bottom_links = linksArray;
+    } else if (!settings.custom.footer_bottom_links) {
+        // Hiç link yoksa boş array olarak kaydet
+        settings.custom.footer_bottom_links = [];
+    }
     
     // Custom CSS
     settings.custom_css = document.getElementById('customCss')?.value || '';
@@ -1526,6 +1609,98 @@ function closeIconPicker() {
     document.getElementById('icon-picker-modal')?.classList.add('hidden');
     currentIconIndex = null;
 }
+
+// Footer Bottom Links Management
+let footerLinkIndex = <?php echo $linkIndex; ?>;
+
+function addFooterLink() {
+    const container = document.getElementById('footer-bottom-links-container');
+    const agreements = <?php echo json_encode($agreements); ?>;
+    
+    let agreementOptions = '<option value="">Özel URL kullan</option>';
+    agreements.forEach(agreement => {
+        agreementOptions += `<option value="${agreement.id}" data-slug="${agreement.slug}">${agreement.title} (${agreement.type})</option>`;
+    });
+    
+    const itemHtml = `
+        <div class="footer-bottom-link-item flex items-center gap-3 p-3 rounded-lg bg-slate-800/50">
+            <div class="flex-1 grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1.5">Link Metni</label>
+                    <input type="text" name="custom[footer_bottom_links][${footerLinkIndex}][text]" 
+                           value="" 
+                           placeholder="Gizlilik Politikası" 
+                           class="w-full px-3 py-2 input-field rounded-lg text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1.5">Sözleşme Seç</label>
+                    <select name="custom[footer_bottom_links][${footerLinkIndex}][agreement_id]" 
+                            class="w-full px-3 py-2 input-field rounded-lg text-sm footer-agreement-select">
+                        ${agreementOptions}
+                    </select>
+                </div>
+            </div>
+            <div class="flex-1">
+                <label class="block text-xs text-slate-400 mb-1.5">Özel URL (Sözleşme seçilmediyse)</label>
+                <input type="text" name="custom[footer_bottom_links][${footerLinkIndex}][url]" 
+                       value="" 
+                       placeholder="/gizlilik-politikasi" 
+                       class="w-full px-3 py-2 input-field rounded-lg text-sm footer-link-url">
+            </div>
+            <button type="button" onclick="removeFooterLink(this)" class="p-2 text-red-400 hover:bg-red-500/10 rounded-lg transition-colors">
+                <span class="material-symbols-outlined text-lg">delete</span>
+            </button>
+        </div>
+    `;
+    container.insertAdjacentHTML('beforeend', itemHtml);
+    
+    // Yeni eklenen select'e event listener ekle
+    const newSelect = container.lastElementChild.querySelector('.footer-agreement-select');
+    if (newSelect) {
+        newSelect.addEventListener('change', function() {
+            updateFooterLinkUrl(this);
+        });
+    }
+    
+    footerLinkIndex++;
+}
+
+function removeFooterLink(btn) {
+    if (confirm('Bu linki silmek istediğinize emin misiniz?')) {
+        btn.closest('.footer-bottom-link-item').remove();
+    }
+}
+
+function updateFooterLinkUrl(select) {
+    const selectedOption = select.options[select.selectedIndex];
+    const slug = selectedOption.getAttribute('data-slug');
+    const urlInput = select.closest('.footer-bottom-link-item').querySelector('.footer-link-url');
+    const textInput = select.closest('.footer-bottom-link-item').querySelector('input[name*="[text]"]');
+    
+    if (slug && urlInput) {
+        urlInput.value = '/' + slug;
+    }
+    
+    // Eğer text boşsa, sözleşme başlığını otomatik doldur
+    if (selectedOption.value && textInput && !textInput.value) {
+        const optionText = selectedOption.textContent.trim();
+        // Parantez içindeki tip bilgisini kaldır
+        const title = optionText.replace(/\s*\([^)]*\)$/, '');
+        textInput.value = title;
+    }
+}
+
+// Mevcut select'ler için change event listener ekle
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.footer-agreement-select').forEach(select => {
+        if (!select.hasAttribute('data-listener-added')) {
+            select.addEventListener('change', function() {
+                updateFooterLinkUrl(this);
+            });
+            select.setAttribute('data-listener-added', 'true');
+        }
+    });
+});
 
 // Icon input değiştiğinde preview'ı güncelle
 document.addEventListener('DOMContentLoaded', () => {

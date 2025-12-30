@@ -169,6 +169,7 @@ class MenuController extends Controller {
                     return;
                 }
                 
+                // Slug otomatik güncellenecek (isim değiştiyse)
                 $this->menuModel->update($menuId, [
                     'name' => $name,
                     'location' => $location,
@@ -182,14 +183,14 @@ class MenuController extends Controller {
                 );
                 
                 if ($existingMenu) {
-                    // Mevcut menüyü kullan
+                    // Mevcut menüyü kullan - slug otomatik güncellenecek
                     $menuId = $existingMenu['id'];
                     $this->menuModel->update($menuId, [
                         'name' => $name,
                         'status' => 'active'
                     ]);
                 } else {
-                    // Yeni oluştur
+                    // Yeni oluştur - slug otomatik oluşturulacak
                     $menuId = $this->menuModel->create([
                         'name' => $name,
                         'location' => $location,

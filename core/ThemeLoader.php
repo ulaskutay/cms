@@ -492,6 +492,13 @@ class ThemeLoader {
      * Özel ayarı getir
      */
     public function getCustomSetting(string $key, $default = null) {
+        // Footer ayarları için footer grubunu da kontrol et
+        if (strpos($key, 'footer_') === 0) {
+            $value = $this->getSetting($key, null, 'footer');
+            if ($value !== null) {
+                return $value;
+            }
+        }
         return $this->getSetting($key, $default, 'custom');
     }
     

@@ -112,6 +112,13 @@ class ThemeController extends Controller {
             $slug = $data['theme_slug'] ?? null;
             $settings = $data['settings'] ?? [];
             
+            // Debug: Gelen footer_bottom_links'i logla
+            if (isset($settings['custom']['footer_bottom_links'])) {
+                error_log("ThemeController - footer_bottom_links received: " . json_encode($settings['custom']['footer_bottom_links']));
+            } else {
+                error_log("ThemeController - footer_bottom_links NOT in settings. Custom keys: " . json_encode(array_keys($settings['custom'] ?? [])));
+            }
+            
             if (!$slug) {
                 throw new Exception('Tema slug gerekli');
             }
@@ -132,6 +139,7 @@ class ThemeController extends Controller {
             }
         } catch (Exception $e) {
             http_response_code(400);
+            error_log("ThemeController saveSettings error: " . $e->getMessage() . " | Trace: " . $e->getTraceAsString());
             echo json_encode(['success' => false, 'message' => $e->getMessage()]);
         }
         exit;
