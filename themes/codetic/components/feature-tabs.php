@@ -7,58 +7,83 @@
 $section = $section ?? [];
 $settings = $section['settings'] ?? [];
 
-// Section ayarları
-$badge = $settings['badge'] ?? 'codetic.co';
-$heading = $section['title'] ?? 'Yapay Zeka Destekli, Ölçeklenebilir Web Altyapısı';
-$description = $section['subtitle'] ?? 'Codetic altyapısı; yapay zeka destekli optimizasyon, yüksek performanslı kod yapısı ve esnek mimarisiyle uzun vadeli dijital çözümler sunar.';
+// Section ayarları - __() helper fonksiyonu kullanılıyor
+$badge = __($settings['badge'] ?? 'codetic.co');
+$heading = __($section['title'] ?? 'Yapay Zeka Destekli, Ölçeklenebilir Web Altyapısı');
+$description = __($section['subtitle'] ?? 'Codetic altyapısı; yapay zeka destekli optimizasyon, yüksek performanslı kod yapısı ve esnek mimarisiyle uzun vadeli dijital çözümler sunar.');
 
 // Varsayılan tabs verileri
 $defaultTabs = [
     [
         'value' => 'tab-1',
         'icon' => 'zap',
-        'label' => 'Yapay Zeka Destekli',
+        'label' => __('Yapay Zeka Destekli'),
         'content' => [
-            'badge' => 'Modern Web Tasarım Altyapısı',
-            'title' => 'Tema ve Modül Ekleme-Geliştirme Özelliği',
-            'description' => 'SEO ve performans süreçleri akıllı sistemlerle optimize edilir.',
-            'buttonText' => 'Planları Gör',
+            'badge' => __('Modern Web Tasarım Altyapısı'),
+            'title' => __('Tema ve Modül Ekleme-Geliştirme Özelliği'),
+            'description' => __('SEO ve performans süreçleri akıllı sistemlerle optimize edilir.'),
+            'buttonText' => __('Planları Gör'),
             'buttonLink' => '#',
             'imageSrc' => 'https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800&h=600&fit=crop&q=80',
-            'imageAlt' => 'Yapay Zeka Destekli Modül ve Tema Geliştirme'
+            'imageAlt' => __('Yapay Zeka Destekli Modül ve Tema Geliştirme')
         ]
     ],
     [
         'value' => 'tab-2',
         'icon' => 'pointer',
-        'label' => '100% Responsive',
+        'label' => __('100% Responsive'),
         'content' => [
-            'badge' => 'Mobil Uyumlu Panel ve Web Sitesi',
-            'title' => 'Tüm cihazlarda yüksek performanslı şekilde kullanın',
-            'description' => 'Tüm cihazlarda kusursuz deneyim: mobil, tablet ve masaüstü.',
-            'buttonText' => 'Detayları İncele',
+            'badge' => __('Mobil Uyumlu Panel ve Web Sitesi'),
+            'title' => __('Tüm cihazlarda yüksek performanslı şekilde kullanın'),
+            'description' => __('Tüm cihazlarda kusursuz deneyim: mobil, tablet ve masaüstü.'),
+            'buttonText' => __('Detayları İncele'),
             'buttonLink' => '#',
             'imageSrc' => 'https://images.unsplash.com/photo-1616469829581-73993eb86b02?w=800&h=600&fit=crop&q=80',
-            'imageAlt' => 'Responsive Web Altyapıları - Mobil, Tablet ve Masaüstü Uyumluluk'
+            'imageAlt' => __('Responsive Web Altyapıları - Mobil, Tablet ve Masaüstü Uyumluluk')
         ]
     ],
     [
         'value' => 'tab-3',
         'icon' => 'layout',
-        'label' => 'Hafif & Geliştirilebilir',
+        'label' => __('Hafif & Geliştirilebilir'),
         'content' => [
-            'badge' => 'Temiz Mimari',
-            'title' => 'Dilediğiniz şekilde geliştirilebilir ve özelleştirilebilir.',
-            'description' => 'Modül ve tema yapısı ile her sektöre uygun şekilde geliştirilebilir.',
-            'buttonText' => 'Detayları İncele',
+            'badge' => __('Temiz Mimari'),
+            'title' => __('Dilediğiniz şekilde geliştirilebilir ve özelleştirilebilir.'),
+            'description' => __('Modül ve tema yapısı ile her sektöre uygun şekilde geliştirilebilir.'),
+            'buttonText' => __('Detayları İncele'),
             'buttonLink' => '#',
             'imageSrc' => 'https://images.unsplash.com/photo-1618477388954-7852f32655ec?w=800&h=600&fit=crop&q=80',
-            'imageAlt' => 'Geliştirilebilir ve Özelleştirilebilir Web Altyapısı'
+            'imageAlt' => __('Geliştirilebilir ve Özelleştirilebilir Web Altyapısı')
         ]
     ]
 ];
 
 $tabs = !empty($section['tabs']) ? $section['tabs'] : $defaultTabs;
+
+// Tabs içindeki metinleri çevir
+foreach ($tabs as &$tab) {
+    if (!empty($tab['label'])) {
+        $tab['label'] = __($tab['label']);
+    }
+    if (!empty($tab['content'])) {
+        if (!empty($tab['content']['badge'])) {
+            $tab['content']['badge'] = __($tab['content']['badge']);
+        }
+        if (!empty($tab['content']['title'])) {
+            $tab['content']['title'] = __($tab['content']['title']);
+        }
+        if (!empty($tab['content']['description'])) {
+            $tab['content']['description'] = __($tab['content']['description']);
+        }
+        if (!empty($tab['content']['buttonText'])) {
+            $tab['content']['buttonText'] = __($tab['content']['buttonText']);
+        }
+        if (!empty($tab['content']['imageAlt'])) {
+            $tab['content']['imageAlt'] = __($tab['content']['imageAlt']);
+        }
+    }
+}
+unset($tab);
 
 // Icon mapping
 $iconMap = [
@@ -176,7 +201,9 @@ $defaultTabValue = !empty($tabs[0]['value']) ? $tabs[0]['value'] : 'tab-1';
                     $contentTitle = $content['title'] ?? '';
                     $contentDescription = $content['description'] ?? '';
                     $buttonText = $content['buttonText'] ?? '';
-                    $buttonLink = $content['buttonLink'] ?? '#';
+                    $buttonLinkRaw = $content['buttonLink'] ?? '#';
+                    // URL'i dil prefix'i ile oluştur (# hariç)
+                    $buttonLink = ($buttonLinkRaw !== '#' && function_exists('localized_url')) ? localized_url($buttonLinkRaw) : $buttonLinkRaw;
                     $imageSrc = $content['imageSrc'] ?? '';
                     $imageAlt = $content['imageAlt'] ?? $contentTitle;
                     $isActive = ($index === 0);
@@ -242,7 +269,7 @@ $defaultTabValue = !empty($tabs[0]['value']) ? $tabs[0]['value'] : 'tab-1';
                                     <svg class="w-10 h-10 sm:w-16 sm:h-16 mx-auto text-slate-600 mb-2 sm:mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                                     </svg>
-                                    <p class="text-slate-500 text-xs sm:text-sm">Görsel ekleyin</p>
+                                    <p class="text-slate-500 text-xs sm:text-sm"><?php echo esc_html__('Görsel ekleyin'); ?></p>
                                 </div>
                             </div>
                             <div class="absolute inset-0 rounded-xl md:rounded-2xl border border-slate-700/50 pointer-events-none"></div>

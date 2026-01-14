@@ -76,7 +76,7 @@
             ?>
 
             <!-- Main Content -->
-            <main class="main-content-with-sidebar flex-1 p-4 sm:p-6 lg:p-10 bg-gray-50 dark:bg-[#15202b]">
+            <main class="main-content-with-sidebar flex-1 p-4 sm:p-6 lg:p-10 lg:ml-64 bg-gray-50 dark:bg-[#15202b]">
                 <div class="layout-content-container flex flex-col w-full mx-auto max-w-4xl">
                     <!-- PageHeading -->
                     <header class="flex items-center gap-2 sm:gap-4 mb-6">

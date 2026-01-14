@@ -79,7 +79,7 @@
             ?>
 
             <!-- Main Content -->
-            <main class="main-content-with-sidebar flex-1 p-4 sm:p-6 lg:p-10 bg-gray-50 dark:bg-[#15202b]">
+            <main class="main-content-with-sidebar flex-1 p-4 sm:p-6 lg:p-10 lg:ml-64 bg-gray-50 dark:bg-[#15202b]">
                 <div class="layout-content-container flex flex-col w-full mx-auto max-w-3xl">
                     <!-- Breadcrumb -->
                     <nav class="flex items-center gap-2 text-xs sm:text-sm mb-4 sm:mb-6 overflow-x-auto scrollbar-hide">

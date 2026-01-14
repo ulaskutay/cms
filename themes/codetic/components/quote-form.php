@@ -4,6 +4,170 @@
  * Çok adımlı teklif alma formu
  */
 
+// Form field render fonksiyonu - ÖNCE tanımlanmalı
+if (!function_exists('render_quote_form_field')) {
+function render_quote_form_field($field, $stepNumber = null) {
+    $fieldId = 'field-' . $field['name'];
+    $requiredClass = $field['required'] ? 'required' : '';
+    
+    // Layout elemanlarını atla (heading, paragraph, divider)
+    if (in_array($field['type'], ['heading', 'paragraph', 'divider'])) {
+        return;
+    }
+    
+    // Adım 4 için dinamik alan kontrolü (şirket/kişisel)
+    $fieldName = strtolower($field['name']);
+    $isCompanyField = in_array($fieldName, ['company_name', 'position', 'company']);
+    $isPersonalField = in_array($fieldName, ['name', 'surname', 'email', 'phone', 'city', 'district']);
+    $dynamicClass = '';
+    if ($isCompanyField) {
+        $dynamicClass = 'quote-company-field';
+    } elseif ($isPersonalField) {
+        $dynamicClass = 'quote-personal-field';
+    }
+    
+    ?>
+    <div class="quote-form-field <?php echo esc_attr($requiredClass); ?> <?php echo esc_attr($dynamicClass); ?>" 
+         data-field-type="<?php echo esc_attr($field['type']); ?>"
+         data-field-name="<?php echo esc_attr($field['name']); ?>">
+        <?php if ($field['type'] !== 'hidden'): ?>
+            <label class="block text-white font-medium mb-2" for="<?php echo esc_attr($fieldId); ?>">
+                <?php echo esc_html($field['label']); ?>
+                <?php if ($field['required']): ?>
+                    <span class="text-red-400">*</span>
+                <?php endif; ?>
+            </label>
+        <?php endif; ?>
+        
+        <div class="field-input-wrapper">
+            <?php
+            switch ($field['type']) {
+                case 'text':
+                case 'email':
+                case 'phone':
+                case 'number':
+                case 'date':
+                    $inputType = $field['type'];
+                    if ($field['type'] === 'phone') $inputType = 'tel';
+                    ?>
+                    <input type="<?php echo esc_attr($inputType); ?>" 
+                           id="<?php echo esc_attr($fieldId); ?>"
+                           name="<?php echo esc_attr($field['name']); ?>" 
+                           placeholder="<?php echo esc_attr($field['placeholder'] ?? ''); ?>"
+                           value="<?php echo esc_attr($field['default_value'] ?? ''); ?>"
+                           class="w-full px-4 py-3 rounded-xl bg-slate-800/50 border border-slate-700 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                           <?php echo $field['required'] ? 'required' : ''; ?>>
+                    <?php
+                    break;
+                    
+                case 'textarea':
+                    ?>
+                    <textarea id="<?php echo esc_attr($fieldId); ?>"
+                              name="<?php echo esc_attr($field['name']); ?>" 
+                              placeholder="<?php echo esc_attr($field['placeholder'] ?? ''); ?>"
+                              rows="4"
+                              class="w-full px-4 py-3 rounded-xl bg-slate-800/50 border border-slate-700 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all resize-none"
+                              <?php echo $field['required'] ? 'required' : ''; ?>><?php echo esc_html($field['default_value'] ?? ''); ?></textarea>
+                    <?php
+                    break;
+                    
+                case 'select':
+                    ?>
+                    <select id="<?php echo esc_attr($fieldId); ?>"
+                            name="<?php echo esc_attr($field['name']); ?>" 
+                            class="w-full px-4 py-3 rounded-xl bg-slate-800/50 border border-slate-700 text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                            <?php echo $field['required'] ? 'required' : ''; ?>>
+                        <option value=""><?php echo esc_html($field['placeholder'] ?? 'Seçiniz...'); ?></option>
+                        <?php if (!empty($field['options'])): ?>
+                            <?php foreach ($field['options'] as $option): ?>
+                                <option value="<?php echo esc_attr($option['value'] ?? $option); ?>" 
+                                        <?php echo ($field['default_value'] ?? '') === ($option['value'] ?? $option) ? 'selected' : ''; ?>>
+                                    <?php echo esc_html($option['label'] ?? $option); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </select>
+                    <?php
+                    break;
+                    
+                case 'radio':
+                    // Adım 1 için özel render yapıldı, buraya gelmemeli ama fallback olarak
+                    ?>
+                    <div class="space-y-3">
+                        <?php if (!empty($field['options'])): ?>
+                            <?php foreach ($field['options'] as $i => $option): ?>
+                                <label class="flex items-center p-4 rounded-xl bg-slate-800/30 border border-slate-700 hover:bg-slate-800/50 cursor-pointer transition-all quote-radio-option">
+                                    <input type="radio" 
+                                           id="<?php echo esc_attr($fieldId); ?>-<?php echo $i; ?>"
+                                           name="<?php echo esc_attr($field['name']); ?>" 
+                                           value="<?php echo esc_attr($option['value'] ?? $option); ?>"
+                                           class="w-5 h-5 text-primary focus:ring-2 focus:ring-primary border-slate-600 bg-slate-800"
+                                           <?php echo ($field['default_value'] ?? '') === ($option['value'] ?? $option) ? 'checked' : ''; ?>
+                                           <?php echo $field['required'] ? 'required' : ''; ?>>
+                                    <span class="ml-3 text-white"><?php echo esc_html($option['label'] ?? $option); ?></span>
+                                </label>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </div>
+                    <?php
+                    break;
+                    
+                case 'checkbox':
+                    // KVKK checkbox için özel tasarım
+                    if (strpos($fieldName, 'kvkk') !== false || strpos($fieldName, 'consent') !== false || strpos($fieldName, 'terms') !== false) {
+                        ?>
+                        <label class="flex items-start p-4 rounded-xl bg-slate-800/30 border border-slate-700 hover:bg-slate-800/50 cursor-pointer transition-all">
+                            <input type="checkbox" 
+                                   id="<?php echo esc_attr($fieldId); ?>"
+                                   name="<?php echo esc_attr($field['name']); ?>" 
+                                   value="1"
+                                   class="w-5 h-5 text-primary focus:ring-2 focus:ring-primary border-slate-600 bg-slate-800 rounded mt-0.5"
+                                   <?php echo $field['required'] ? 'required' : ''; ?>>
+                            <span class="ml-3 text-white text-sm"><?php echo esc_html($field['label']); ?></span>
+                        </label>
+                        <?php
+                    } else {
+                        // Normal checkbox
+                        ?>
+                        <div class="space-y-3">
+                            <?php if (!empty($field['options'])): ?>
+                                <?php foreach ($field['options'] as $i => $option): ?>
+                                    <label class="flex items-center p-3 rounded-xl bg-slate-800/30 border border-slate-700 hover:bg-slate-800/50 cursor-pointer transition-all">
+                                        <input type="checkbox" 
+                                               id="<?php echo esc_attr($fieldId); ?>-<?php echo $i; ?>"
+                                               name="<?php echo esc_attr($field['name']); ?>[]" 
+                                               value="<?php echo esc_attr($option['value'] ?? $option); ?>"
+                                               class="w-5 h-5 text-primary focus:ring-2 focus:ring-primary border-slate-600 bg-slate-800 rounded">
+                                        <span class="ml-3 text-white"><?php echo esc_html($option['label'] ?? $option); ?></span>
+                                    </label>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </div>
+                        <?php
+                    }
+                    break;
+                    
+                case 'hidden':
+                    ?>
+                    <input type="hidden" 
+                           name="<?php echo esc_attr($field['name']); ?>" 
+                           value="<?php echo esc_attr($field['default_value'] ?? ''); ?>">
+                    <?php
+                    break;
+            }
+            ?>
+        </div>
+        
+        <?php if (!empty($field['help_text'])): ?>
+            <p class="mt-2 text-sm text-slate-400"><?php echo esc_html($field['help_text']); ?></p>
+        <?php endif; ?>
+        
+        <div class="field-error-message hidden mt-2 text-sm text-red-400"></div>
+    </div>
+    <?php
+}
+}
+
 // Değişkenleri kontrol et
 $form = $form ?? [];
 $steps = $steps ?? [];
@@ -269,53 +433,64 @@ $currentStep = 1;
                                 endif;
                             }
                             // Diğer adımlar için normal render
-                            else:
-                                foreach ($step['fields'] as $field): ?>
-                                    <?php render_quote_form_field($field, $step['stepNumber']); ?>
-                                <?php endforeach;
-                            endif; ?>
+                            else {
+                                foreach ($step['fields'] as $field) {
+                                    render_quote_form_field($field, $step['stepNumber']);
+                                }
+                            } ?>
                         </div>
 
                         <!-- Step Navigation -->
-                        <div class="flex items-center justify-between mt-10 pt-8 border-t border-slate-700">
-                            <button type="button" 
-                                    class="quote-prev-btn px-6 py-3 rounded-xl bg-slate-700/50 hover:bg-slate-700 text-white transition-all duration-200 <?php echo $index === 0 ? 'opacity-50 cursor-not-allowed' : ''; ?>"
-                                    data-step="<?php echo $step['stepNumber']; ?>"
-                                    <?php echo $index === 0 ? 'disabled' : ''; ?>>
-                                <span class="flex items-center gap-2">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-                                    </svg>
-                                    Geri
-                                </span>
-                            </button>
-
-                            <div class="text-slate-400 text-sm">
-                                Adım <?php echo $step['stepNumber']; ?> / <?php echo $totalSteps; ?>
+                        <div class="flex items-center justify-between mt-10 pt-8 border-t border-slate-700/50">
+                            <!-- Geri Butonu (İlk adımda gizli) -->
+                            <div class="flex-1">
+                                <?php if ($index > 0): ?>
+                                    <button type="button" 
+                                            class="quote-prev-btn px-6 py-3 rounded-xl bg-slate-700/50 hover:bg-slate-700 text-white transition-all duration-200 flex items-center gap-2 font-medium"
+                                            data-step="<?php echo $step['stepNumber']; ?>">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                                        </svg>
+                                        Geri
+                                    </button>
+                                <?php endif; ?>
                             </div>
 
-                            <?php if ($index < count($steps) - 1): ?>
-                                <button type="button" 
-                                        class="quote-next-btn px-6 py-3 rounded-xl bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white transition-all duration-200 flex items-center gap-2 font-medium"
-                                        data-step="<?php echo $step['stepNumber']; ?>"
-                                        data-next-step="<?php echo $step['stepNumber'] + 1; ?>">
-                                    İleri
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                                    </svg>
-                                </button>
-                            <?php else: ?>
-                                <button type="submit" 
-                                        class="quote-submit-btn px-8 py-3 rounded-xl bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white font-semibold transition-all duration-200 flex items-center gap-2">
-                                    <span class="submit-text">Gönder</span>
-                                    <span class="submit-loading hidden">
-                                        <svg class="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
-                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            <!-- Adım Göstergesi (Ortada) -->
+                            <div class="flex-1 text-center">
+                                <div class="text-slate-400 text-sm font-medium">
+                                    Adım <span class="text-primary font-bold"><?php echo $step['stepNumber']; ?></span> / <?php echo $totalSteps; ?>
+                                </div>
+                            </div>
+
+                            <!-- İleri/Gönder Butonu (Sağda) -->
+                            <div class="flex-1 flex justify-end">
+                                <?php if ($index < count($steps) - 1): ?>
+                                    <button type="button" 
+                                            class="quote-next-btn px-8 py-3 rounded-xl bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white transition-all duration-200 flex items-center gap-2 font-semibold shadow-lg shadow-primary/20 hover:shadow-primary/30"
+                                            data-step="<?php echo $step['stepNumber']; ?>"
+                                            data-next-step="<?php echo $step['stepNumber'] + 1; ?>">
+                                        İleri
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                                         </svg>
-                                    </span>
-                                </button>
-                            <?php endif; ?>
+                                    </button>
+                                <?php else: ?>
+                                    <button type="submit" 
+                                            class="quote-submit-btn px-10 py-3 rounded-xl bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white font-bold transition-all duration-200 flex items-center gap-2 shadow-lg shadow-primary/20 hover:shadow-primary/30">
+                                        <span class="submit-text">Gönder</span>
+                                        <span class="submit-loading hidden">
+                                            <svg class="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
+                                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            </svg>
+                                        </span>
+                                        <svg class="w-5 h-5 submit-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                        </svg>
+                                    </button>
+                                <?php endif; ?>
+                            </div>
                         </div>
                     </div>
                 <?php endforeach; ?>
@@ -342,174 +517,6 @@ $currentStep = 1;
         </div>
     </div>
 </section>
-
-<?php
-/**
- * Quote form field render function
- */
-if (!function_exists('render_quote_form_field')) {
-function render_quote_form_field($field, $stepNumber = null) {
-    $fieldId = 'field-' . $field['name'];
-    $requiredClass = $field['required'] ? 'required' : '';
-    
-    // Layout elemanlarını atla (heading, paragraph, divider)
-    if (in_array($field['type'], ['heading', 'paragraph', 'divider'])) {
-        return;
-    }
-    
-    // Adım 4 için dinamik alan kontrolü (şirket/kişisel)
-    $fieldName = strtolower($field['name']);
-    $isCompanyField = in_array($fieldName, ['company_name', 'position', 'company']);
-    $isPersonalField = in_array($fieldName, ['name', 'surname', 'email', 'phone', 'city', 'district']);
-    $dynamicClass = '';
-    if ($isCompanyField) {
-        $dynamicClass = 'quote-company-field';
-    } elseif ($isPersonalField) {
-        $dynamicClass = 'quote-personal-field';
-    }
-    
-    ?>
-    <div class="quote-form-field <?php echo esc_attr($requiredClass); ?> <?php echo esc_attr($dynamicClass); ?>" 
-         data-field-type="<?php echo esc_attr($field['type']); ?>"
-         data-field-name="<?php echo esc_attr($field['name']); ?>">
-        <?php if ($field['type'] !== 'hidden'): ?>
-            <label class="block text-white font-medium mb-2" for="<?php echo esc_attr($fieldId); ?>">
-                <?php echo esc_html($field['label']); ?>
-                <?php if ($field['required']): ?>
-                    <span class="text-red-400">*</span>
-                <?php endif; ?>
-            </label>
-        <?php endif; ?>
-        
-        <div class="field-input-wrapper">
-            <?php
-            switch ($field['type']) {
-                case 'text':
-                case 'email':
-                case 'phone':
-                case 'number':
-                case 'date':
-                    $inputType = $field['type'];
-                    if ($field['type'] === 'phone') $inputType = 'tel';
-                    ?>
-                    <input type="<?php echo esc_attr($inputType); ?>" 
-                           id="<?php echo esc_attr($fieldId); ?>"
-                           name="<?php echo esc_attr($field['name']); ?>" 
-                           placeholder="<?php echo esc_attr($field['placeholder'] ?? ''); ?>"
-                           value="<?php echo esc_attr($field['default_value'] ?? ''); ?>"
-                           class="w-full px-4 py-3 rounded-xl bg-slate-800/50 border border-slate-700 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
-                           <?php echo $field['required'] ? 'required' : ''; ?>>
-                    <?php
-                    break;
-                    
-                case 'textarea':
-                    ?>
-                    <textarea id="<?php echo esc_attr($fieldId); ?>"
-                              name="<?php echo esc_attr($field['name']); ?>" 
-                              placeholder="<?php echo esc_attr($field['placeholder'] ?? ''); ?>"
-                              rows="4"
-                              class="w-full px-4 py-3 rounded-xl bg-slate-800/50 border border-slate-700 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all resize-none"
-                              <?php echo $field['required'] ? 'required' : ''; ?>><?php echo esc_html($field['default_value'] ?? ''); ?></textarea>
-                    <?php
-                    break;
-                    
-                case 'select':
-                    ?>
-                    <select id="<?php echo esc_attr($fieldId); ?>"
-                            name="<?php echo esc_attr($field['name']); ?>" 
-                            class="w-full px-4 py-3 rounded-xl bg-slate-800/50 border border-slate-700 text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
-                            <?php echo $field['required'] ? 'required' : ''; ?>>
-                        <option value=""><?php echo esc_html($field['placeholder'] ?? 'Seçiniz...'); ?></option>
-                        <?php if (!empty($field['options'])): ?>
-                            <?php foreach ($field['options'] as $option): ?>
-                                <option value="<?php echo esc_attr($option['value'] ?? $option); ?>" 
-                                        <?php echo ($field['default_value'] ?? '') === ($option['value'] ?? $option) ? 'selected' : ''; ?>>
-                                    <?php echo esc_html($option['label'] ?? $option); ?>
-                                </option>
-                            <?php endforeach; ?>
-                        <?php endif; ?>
-                    </select>
-                    <?php
-                    break;
-                    
-                case 'radio':
-                    // Adım 1 için özel render yapıldı, buraya gelmemeli ama fallback olarak
-                    ?>
-                    <div class="space-y-3">
-                        <?php if (!empty($field['options'])): ?>
-                            <?php foreach ($field['options'] as $i => $option): ?>
-                                <label class="flex items-center p-4 rounded-xl bg-slate-800/30 border border-slate-700 hover:bg-slate-800/50 cursor-pointer transition-all quote-radio-option">
-                                    <input type="radio" 
-                                           id="<?php echo esc_attr($fieldId); ?>-<?php echo $i; ?>"
-                                           name="<?php echo esc_attr($field['name']); ?>" 
-                                           value="<?php echo esc_attr($option['value'] ?? $option); ?>"
-                                           class="w-5 h-5 text-primary focus:ring-2 focus:ring-primary border-slate-600 bg-slate-800"
-                                           <?php echo ($field['default_value'] ?? '') === ($option['value'] ?? $option) ? 'checked' : ''; ?>
-                                           <?php echo $field['required'] ? 'required' : ''; ?>>
-                                    <span class="ml-3 text-white"><?php echo esc_html($option['label'] ?? $option); ?></span>
-                                </label>
-                            <?php endforeach; ?>
-                        <?php endif; ?>
-                    </div>
-                    <?php
-                    break;
-                    
-                case 'checkbox':
-                    // KVKK checkbox için özel tasarım
-                    if (strpos($fieldName, 'kvkk') !== false || strpos($fieldName, 'consent') !== false || strpos($fieldName, 'terms') !== false) {
-                        ?>
-                        <label class="flex items-start p-4 rounded-xl bg-slate-800/30 border border-slate-700 hover:bg-slate-800/50 cursor-pointer transition-all">
-                            <input type="checkbox" 
-                                   id="<?php echo esc_attr($fieldId); ?>"
-                                   name="<?php echo esc_attr($field['name']); ?>" 
-                                   value="1"
-                                   class="w-5 h-5 text-primary focus:ring-2 focus:ring-primary border-slate-600 bg-slate-800 rounded mt-0.5"
-                                   <?php echo $field['required'] ? 'required' : ''; ?>>
-                            <span class="ml-3 text-white text-sm"><?php echo esc_html($field['label']); ?></span>
-                        </label>
-                        <?php
-                    } else {
-                        // Normal checkbox
-                        ?>
-                        <div class="space-y-3">
-                            <?php if (!empty($field['options'])): ?>
-                                <?php foreach ($field['options'] as $i => $option): ?>
-                                    <label class="flex items-center p-3 rounded-xl bg-slate-800/30 border border-slate-700 hover:bg-slate-800/50 cursor-pointer transition-all">
-                                        <input type="checkbox" 
-                                               id="<?php echo esc_attr($fieldId); ?>-<?php echo $i; ?>"
-                                               name="<?php echo esc_attr($field['name']); ?>[]" 
-                                               value="<?php echo esc_attr($option['value'] ?? $option); ?>"
-                                               class="w-5 h-5 text-primary focus:ring-2 focus:ring-primary border-slate-600 bg-slate-800 rounded">
-                                        <span class="ml-3 text-white"><?php echo esc_html($option['label'] ?? $option); ?></span>
-                                    </label>
-                                <?php endforeach; ?>
-                            <?php endif; ?>
-                        </div>
-                        <?php
-                    }
-                    break;
-                    
-                case 'hidden':
-                    ?>
-                    <input type="hidden" 
-                           name="<?php echo esc_attr($field['name']); ?>" 
-                           value="<?php echo esc_attr($field['default_value'] ?? ''); ?>">
-                    <?php
-                    break;
-            }
-            ?>
-        </div>
-        
-        <?php if (!empty($field['help_text'])): ?>
-            <p class="mt-2 text-sm text-slate-400"><?php echo esc_html($field['help_text']); ?></p>
-        <?php endif; ?>
-        
-        <div class="field-error-message hidden mt-2 text-sm text-red-400"></div>
-    </div>
-    <?php
-}
-}
-?>
 
 <style>
 @keyframes pulse-slow {
@@ -845,8 +852,6 @@ function render_quote_form_field($field, $stepNumber = null) {
     form.querySelectorAll('.quote-prev-btn').forEach(btn => {
         btn.addEventListener('click', function(e) {
             e.preventDefault();
-            
-            if (this.disabled) return;
             
             const stepNumber = parseInt(this.dataset.step);
             const prevStep = stepNumber - 1;

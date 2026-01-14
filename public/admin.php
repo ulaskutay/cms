@@ -773,8 +773,20 @@ if (strpos($page, 'themes') === 0) {
             exit;
         }
     } catch (Exception $e) {
+        if ($isAjaxEndpoint) {
+            header('Content-Type: application/json');
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => 'Hata: ' . $e->getMessage()]);
+            exit;
+        }
         die("Hata: " . $e->getMessage() . " - Dosya: " . $e->getFile() . " - Satır: " . $e->getLine());
     } catch (Error $e) {
+        if ($isAjaxEndpoint) {
+            header('Content-Type: application/json');
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => 'Fatal Hata: ' . $e->getMessage()]);
+            exit;
+        }
         die("Fatal Hata: " . $e->getMessage() . " - Dosya: " . $e->getFile() . " - Satır: " . $e->getLine());
     }
     exit;

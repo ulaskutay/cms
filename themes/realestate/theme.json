@@ -198,6 +198,26 @@
         "label": "Show Contact Information",
         "type": "boolean",
         "default": true
+      },
+      "footer_menu_title": {
+        "label": "Footer Menu Başlığı",
+        "type": "text",
+        "default": "Quick Links"
+      },
+      "footer_contact_title": {
+        "label": "Footer İletişim Başlığı",
+        "type": "text",
+        "default": "Contact"
+      },
+      "footer_posts_title": {
+        "label": "Footer Yazılar Başlığı",
+        "type": "text",
+        "default": "Recent Posts"
+      },
+      "footer_posts_count": {
+        "label": "Footer'da Gösterilecek Yazı Sayısı",
+        "type": "number",
+        "default": 3
       }
     }
   },

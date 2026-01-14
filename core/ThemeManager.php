@@ -625,30 +625,58 @@ class ThemeManager {
         $stmt->execute($params);
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
         
+        $value = null;
         if ($result) {
             $value = $result['option_value'];
             // JSON ise decode et
             $decoded = json_decode($value, true);
             if (json_last_error() === JSON_ERROR_NONE && (is_array($decoded) || is_object($decoded))) {
-                return $decoded;
+                $value = $decoded;
             }
-            return $value;
-        }
-        
-        // Varsayılan değeri schema'dan al
-        $schema = $theme['settings_schema']['settings'] ?? [];
-        if ($group && isset($schema[$group][$key]['default'])) {
-            return $schema[$group][$key]['default'];
-        }
-        
-        // Tüm grupları tara
-        foreach ($schema as $g => $settings) {
-            if (isset($settings[$key]['default'])) {
-                return $settings[$key]['default'];
+        } else {
+            // Varsayılan değeri schema'dan al
+            $schema = $theme['settings_schema']['settings'] ?? [];
+            if ($group && isset($schema[$group][$key]['default'])) {
+                $value = $schema[$group][$key]['default'];
+            } else {
+                // Tüm grupları tara
+                foreach ($schema as $g => $settings) {
+                    if (isset($settings[$key]['default'])) {
+                        $value = $settings[$key]['default'];
+                        break;
+                    }
+                }
+            }
+            
+            if ($value === null) {
+                $value = $default;
             }
         }
         
-        return $default;
+        // Çevirilmemesi gereken ayarlar (URL'ler, teknik değerler, virgüllü listeler vb.)
+        $noTranslateKeys = [
+            'animated_words', 'button_link', 'secondary_button_link', 'top_button_link',
+            'link', 'url', 'href', 'src', 'image', 'logo', 'favicon', 'icon',
+            'color', 'font', 'size', 'width', 'height', 'padding', 'margin',
+            'style', 'class', 'id', 'enabled', 'active', 'visible', 'show',
+            'top_button_style', 'top_button_icon', 'reverse_layout'
+        ];
+        
+        // Key çevirilmemesi gereken listede mi kontrol et
+        $shouldTranslate = true;
+        foreach ($noTranslateKeys as $noTransKey) {
+            if (strpos($key, $noTransKey) !== false || $key === $noTransKey) {
+                $shouldTranslate = false;
+                break;
+            }
+        }
+        
+        // Çeviri filter'ını uygula (sadece çevirilmesi gereken string değerler için)
+        if ($shouldTranslate && function_exists('apply_filters') && is_string($value) && !empty($value)) {
+            $value = apply_filters('theme_option_value', $value, $key, $group);
+        }
+        
+        return $value;
     }
     
     /**
@@ -750,19 +778,32 @@ class ThemeManager {
             $content = $sectionData['content'] ?? '';
             $isActive = isset($sectionData['enabled']) ? ($sectionData['enabled'] == '1' ? 1 : 0) : 1;
             
-            // Items'ı al (varsa)
+            // Items'ı al (varsa) - tabs verisi de items içinde saklanabilir
             $items = isset($sectionData['items']) && is_array($sectionData['items']) ? $sectionData['items'] : [];
-            $itemsJson = json_encode($items);
             
-            // title, subtitle, content, enabled, items dışındaki alanları settings olarak kaydet
+            // Tabs verisi varsa items yerine tabs kullan (feature-tabs için)
+            if (isset($sectionData['tabs']) && is_array($sectionData['tabs'])) {
+                $items = $sectionData['tabs'];
+            }
+            
+            // Pricing section için packages verisini items olarak kaydet
+            if ($sectionId === 'pricing' && isset($sectionData['packages']) && is_array($sectionData['packages'])) {
+                $items = $sectionData['packages'];
+            }
+            
+            $itemsJson = json_encode($items, JSON_UNESCAPED_UNICODE);
+            
+            // title, subtitle, content, enabled, items, tabs, packages dışındaki alanları settings olarak kaydet
             // settings key'i zaten nested array olarak geliyor, bu yüzden direkt kullanabiliriz
             $settingsData = [];
             if (isset($sectionData['settings']) && is_array($sectionData['settings'])) {
                 $settingsData = $sectionData['settings'];
             } else {
                 // Eğer settings key'i yoksa, diğer alanları settings olarak kaydet
-                $settingsData = array_diff_key($sectionData, array_flip(['title', 'subtitle', 'content', 'enabled', 'items']));
+                $excludeKeys = ['title', 'subtitle', 'content', 'enabled', 'items', 'tabs', 'packages'];
+                $settingsData = array_diff_key($sectionData, array_flip($excludeKeys));
             }
+            
             $settingsJson = json_encode($settingsData, JSON_UNESCAPED_UNICODE);
             
             if ($existing) {
@@ -796,12 +837,18 @@ class ThemeManager {
     private function getSectionSortOrder(string $sectionId): int {
         $order = [
             'hero' => 1,
-            'features' => 2,
-            'about' => 3,
-            'services' => 4,
-            'testimonials' => 5,
-            'cta' => 6,
-            'contact' => 7
+            'featured-listings' => 2,
+            'consultants' => 3,
+            'why-choose-us' => 4,
+            'agent-profile' => 5,
+            'blog-preview' => 6,
+            'testimonials' => 7,
+            'cta' => 8,
+            'features' => 9,
+            'about' => 10,
+            'services' => 11,
+            'pricing' => 12,
+            'contact' => 13
         ];
         return $order[$sectionId] ?? 99;
     }
@@ -813,18 +860,65 @@ class ThemeManager {
     /**
      * Sayfa section'larını getir
      */
-    public function getPageSections(string $pageType): array {
+    public function getPageSections(string $pageType, ?int $themeId = null): array {
+        // Theme ID belirtilmemişse aktif temanın ID'sini kullan
+        if ($themeId === null) {
+            $activeTheme = $this->getActiveTheme();
+            $themeId = $activeTheme['id'] ?? null;
+        }
+        
+        // Theme ID yoksa boş array döndür
+        if ($themeId === null) {
+            return [];
+        }
+        
         $stmt = $this->db->prepare("
             SELECT * FROM page_sections 
-            WHERE page_type = ?
+            WHERE page_type = ? AND theme_id = ?
             ORDER BY sort_order ASC
         ");
-        $stmt->execute([$pageType]);
+        $stmt->execute([$pageType, $themeId]);
         $sections = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
         foreach ($sections as &$section) {
             $section['settings'] = json_decode($section['settings'] ?? '{}', true);
-            $section['items'] = json_decode($section['items'] ?? '[]', true);
+            $itemsDecoded = json_decode($section['items'] ?? '[]', true);
+            
+            // Çeviri filter'larını uygula - module.json'da tanımlı filter isimlerini kullan
+            if (function_exists('apply_filters')) {
+                $sectionId = $section['section_id'] ?? '';
+                
+                if (!empty($section['title'])) {
+                    $section['title'] = apply_filters('theme_section_title', $section['title'], $sectionId);
+                }
+                if (!empty($section['subtitle'])) {
+                    $section['subtitle'] = apply_filters('theme_section_subtitle', $section['subtitle'], $sectionId);
+                }
+                if (!empty($section['content'])) {
+                    $section['content'] = apply_filters('theme_section_content', $section['content'], $sectionId);
+                }
+                
+                // Settings içindeki metinleri çevir
+                if (is_array($section['settings'])) {
+                    $section['settings'] = apply_filters('theme_section_settings', $section['settings'], $sectionId);
+                }
+                
+                // Items içindeki metinleri çevir
+                if (is_array($itemsDecoded)) {
+                    $itemsDecoded = apply_filters('theme_section_items', $itemsDecoded, $sectionId);
+                }
+            }
+            
+            // Eğer section_id'ye göre özel işlemler
+            if (($section['section_id'] ?? '') === 'feature-tabs') {
+                // Tabs için özel filter
+                $section['tabs'] = apply_filters('theme_section_tabs', $itemsDecoded, $sectionId);
+            } elseif (($section['section_id'] ?? '') === 'pricing') {
+                // Pricing section için packages olarak map et
+                $section['packages'] = apply_filters('theme_section_packages', $itemsDecoded, $sectionId);
+            } else {
+                $section['items'] = $itemsDecoded;
+            }
         }
         
         return $sections;
@@ -1025,6 +1119,7 @@ class ThemeManager {
      */
     public function getAvailableFonts(): array {
         return [
+            'Zalando Sans SemiExpanded' => 'Zalando Sans SemiExpanded',
             'Inter' => 'Inter',
             'Roboto' => 'Roboto',
             'Open Sans' => 'Open Sans',

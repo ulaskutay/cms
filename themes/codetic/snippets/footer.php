@@ -8,7 +8,7 @@
 $footerShow = $themeLoader->getCustomSetting('footer_show', true);
 $footerBgColor = $themeLoader->getCustomSetting('footer_bg_color', '#0a0a0f');
 $footerTextColor = $themeLoader->getCustomSetting('footer_text_color', '#ffffff');
-$footerCopyrightText = $themeLoader->getCustomSetting('footer_copyright_text', 'Tüm hakları saklıdır.');
+$footerCopyrightText = __($themeLoader->getCustomSetting('footer_copyright_text', 'Tüm hakları saklıdır.'));
 $footerShowSocial = $themeLoader->getCustomSetting('footer_show_social', true);
 $footerShowMenu = $themeLoader->getCustomSetting('footer_show_menu', true);
 $footerShowContact = $themeLoader->getCustomSetting('footer_show_contact', true);
@@ -21,7 +21,7 @@ $footerLinkHoverEffect = $themeLoader->getCustomSetting('footer_link_hover_effec
 $footerContactIconStyle = $themeLoader->getCustomSetting('footer_contact_icon_style', 'boxed');
 $footerShowBottomGradient = $themeLoader->getCustomSetting('footer_show_bottom_gradient', true);
 $footerShowBackToTop = $themeLoader->getCustomSetting('footer_show_back_to_top', true);
-$footerBackToTopText = $themeLoader->getCustomSetting('footer_back_to_top_text', 'Yukarı Çık');
+$footerBackToTopText = __($themeLoader->getCustomSetting('footer_back_to_top_text', 'Yukarı Çık'));
 $footerPaddingTop = $themeLoader->getCustomSetting('footer_padding_top', 'large');
 $footerPaddingBottom = $themeLoader->getCustomSetting('footer_padding_bottom', 'large');
 $footerHeadingUnderline = $themeLoader->getCustomSetting('footer_heading_underline', true);
@@ -53,18 +53,18 @@ if (!$footerShow) {
     return;
 }
 
-// Site ayarları
-$siteName = get_option('site_name', 'Site Adı');
-$siteDescription = get_option('site_description', 'Modern ve profesyonel web çözümleri.');
+// Site ayarları - __() helper fonksiyonu kullanılıyor
+$siteName = __(get_option('site_name', 'Site Adı'));
+$siteDescription = __(get_option('site_description', 'Modern ve profesyonel web çözümleri.'));
 $siteLogo = $themeLoader->getLogo();
 $logoWidth = $themeLoader->getLogoWidth();
 $logoHeight = $themeLoader->getLogoHeight();
 
-// Şirket bilgileri
-$companyName = get_option('company_name', get_option('site_name', ''));
+// Şirket bilgileri - __() helper fonksiyonu kullanılıyor
+$companyName = __(get_option('company_name', get_option('site_name', '')));
 $companyEmail = get_option('company_email', get_option('contact_email', ''));
 $companyPhone = get_option('company_phone', get_option('contact_phone', ''));
-$companyAddress = get_option('company_address', get_option('contact_address', ''));
+$companyAddress = __(get_option('company_address', get_option('contact_address', '')));
 
 // Sosyal medya
 $socialFacebook = get_option('social_facebook', '');
@@ -108,7 +108,7 @@ $secondaryColor = 'var(--color-secondary, #8b5cf6)';
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-12">
             <!-- Logo ve Açıklama -->
             <div class="lg:col-span-1">
-                <a href="/" class="inline-block mb-6 group">
+                <a href="<?php echo function_exists('localized_url') ? localized_url('/') : '/'; ?>" class="inline-block mb-6 group">
                     <?php if (!empty($siteLogo)): ?>
                         <?php
                         $logoAspectRatio = $logoWidth && $logoHeight ? ($logoWidth / $logoHeight) : 2.5;
@@ -182,15 +182,18 @@ $secondaryColor = 'var(--color-secondary, #8b5cf6)';
             <?php if ($hasMenu): ?>
             <div class="lg:col-span-1">
                 <h3 class="text-sm font-semibold text-white uppercase tracking-wider mb-6 relative inline-block">
-                    <?php echo esc_html($footerMenu['name'] ?? 'Hızlı Linkler'); ?>
+                    <?php echo esc_html__($footerMenu['name'] ?? 'Hızlı Linkler'); ?>
                     <?php if ($footerHeadingUnderline): ?>
                     <span class="absolute -bottom-1 left-0 w-8 h-0.5 bg-gradient-to-r from-primary to-secondary rounded-full"></span>
                     <?php endif; ?>
                 </h3>
                 <ul class="space-y-3.5">
-                    <?php foreach ($footerMenuItems as $item): ?>
+                    <?php foreach ($footerMenuItems as $item): 
+                        // URL'i dil prefix'i ile oluştur
+                        $footerItemUrl = (function_exists('get_localized_menu_url') ? get_localized_menu_url($item['url']) : $item['url']);
+                    ?>
                     <li>
-                        <a href="<?php echo esc_url($item['url']); ?>" 
+                        <a href="<?php echo esc_url($footerItemUrl); ?>" 
                            class="footer-link footer-link-<?php echo esc_attr($footerLinkHoverEffect); ?> text-gray-400 hover:text-white transition-all duration-300 text-sm inline-flex items-center gap-2 group"
                            <?php echo ($item['target'] ?? '') === '_blank' ? 'target="_blank" rel="noopener noreferrer"' : ''; ?>>
                             <?php if ($footerLinkHoverEffect === 'dot'): ?>
@@ -208,15 +211,18 @@ $secondaryColor = 'var(--color-secondary, #8b5cf6)';
             <?php if ($hasMenu2): ?>
             <div class="lg:col-span-1">
                 <h3 class="text-sm font-semibold text-white uppercase tracking-wider mb-6 relative inline-block">
-                    <?php echo esc_html($footerMenu2['name'] ?? 'Kaynaklar'); ?>
+                    <?php echo esc_html__($footerMenu2['name'] ?? 'Kaynaklar'); ?>
                     <?php if ($footerHeadingUnderline): ?>
                     <span class="absolute -bottom-1 left-0 w-8 h-0.5 bg-gradient-to-r from-primary to-secondary rounded-full"></span>
                     <?php endif; ?>
                 </h3>
                 <ul class="space-y-3.5">
-                    <?php foreach ($footerMenu2Items as $item): ?>
+                    <?php foreach ($footerMenu2Items as $item): 
+                        // URL'i dil prefix'i ile oluştur
+                        $footerItem2Url = (function_exists('get_localized_menu_url') ? get_localized_menu_url($item['url']) : $item['url']);
+                    ?>
                     <li>
-                        <a href="<?php echo esc_url($item['url']); ?>" 
+                        <a href="<?php echo esc_url($footerItem2Url); ?>" 
                            class="footer-link footer-link-<?php echo esc_attr($footerLinkHoverEffect); ?> text-gray-400 hover:text-white transition-all duration-300 text-sm inline-flex items-center gap-2 group"
                            <?php echo ($item['target'] ?? '') === '_blank' ? 'target="_blank" rel="noopener noreferrer"' : ''; ?>>
                             <?php if ($footerLinkHoverEffect === 'dot'): ?>
@@ -234,7 +240,7 @@ $secondaryColor = 'var(--color-secondary, #8b5cf6)';
             <?php if ($hasContact): ?>
             <div class="lg:col-span-1">
                 <h3 class="text-sm font-semibold text-white uppercase tracking-wider mb-6 relative inline-block">
-                    İletişim
+                    <?php echo esc_html__('İletişim'); ?>
                     <?php if ($footerHeadingUnderline): ?>
                     <span class="absolute -bottom-1 left-0 w-8 h-0.5 bg-gradient-to-r from-primary to-secondary rounded-full"></span>
                     <?php endif; ?>

@@ -156,7 +156,26 @@ function renderStarterMobileMenuItem($item, $level = 0) {
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center <?php echo $isCentered ? 'justify-center' : 'justify-between'; ?> h-20 sm:h-24 lg:h-28">
             <!-- Logo -->
-            <a href="/" class="flex items-center gap-3 <?php echo $isCentered ? 'absolute left-4 sm:left-6 lg:left-8' : ''; ?>">
+            <?php
+            // Mevcut dil kodunu al ve logo linkini ayarla
+            $logoUrl = '/';
+            if (class_exists('ModuleLoader')) {
+                $moduleLoader = ModuleLoader::getInstance();
+                $translationController = $moduleLoader->getModuleController('translation');
+                if ($translationController && method_exists($translationController, 'getLocalizedUrl')) {
+                    $logoUrl = $translationController->getLocalizedUrl('/');
+                } else {
+                    // Fallback: Session'dan al
+                    $currentLang = isset($_SESSION['current_language']) ? $_SESSION['current_language'] : 'tr';
+                    $defaultLang = 'tr';
+                    if (function_exists('get_module_setting')) {
+                        $defaultLang = get_module_setting('translation', 'default_language', 'tr');
+                    }
+                    $logoUrl = ($currentLang === $defaultLang) ? '/' : '/' . $currentLang . '/';
+                }
+            }
+            ?>
+            <a href="<?php echo esc_url($logoUrl); ?>" class="flex items-center gap-3 <?php echo $isCentered ? 'absolute left-4 sm:left-6 lg:left-8' : ''; ?>">
                 <?php if (!empty($siteLogo)): ?>
                     <?php
                     // Logo görüntülenen boyutları (Tailwind class'larına göre)
@@ -197,6 +216,12 @@ function renderStarterMobileMenuItem($item, $level = 0) {
             
             <!-- CTA Button & Search -->
             <div class="hidden md:flex items-center gap-4 <?php echo $isCentered ? 'absolute right-4 sm:right-6 lg:right-8' : ''; ?>">
+                <?php 
+                // Dil switcher (Translation modülü aktifse)
+                if (function_exists('do_action')) {
+                    do_action('theme_header_after_menu');
+                }
+                ?>
                 <?php if ($showSearch): ?>
                     <button id="header-search-btn" class="p-2 hover:opacity-80 transition-opacity" style="color: <?php echo esc_attr($headerTextColor); ?>" aria-label="Ara">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
@@ -229,6 +254,16 @@ function renderStarterMobileMenuItem($item, $level = 0) {
                 <a href="/blog" class="block py-3 font-medium hover:opacity-80 transition-opacity" style="color: <?php echo esc_attr($headerTextColor); ?>;">Blog</a>
                 <a href="/contact" class="block py-3 font-medium hover:opacity-80 transition-opacity" style="color: <?php echo esc_attr($headerTextColor); ?>;">İletişim</a>
             <?php endif; ?>
+            
+            <!-- Language Switcher (Mobile) -->
+            <div class="pt-4 border-t" style="border-color: rgba(0,0,0,0.1);">
+                <?php 
+                if (function_exists('do_action')) {
+                    do_action('theme_header_after_menu');
+                }
+                ?>
+            </div>
+            
             <?php if ($showCta): ?>
             <div class="pt-4 border-t" style="border-color: rgba(0,0,0,0.1);">
                 <a href="<?php echo esc_url($ctaLink); ?>" class="block btn-primary px-4 py-3 rounded-lg font-medium text-center">

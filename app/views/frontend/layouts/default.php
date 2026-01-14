@@ -112,10 +112,21 @@
             --font-heading: '<?php echo $headingFont; ?>', sans-serif;
             --font-body: '<?php echo $bodyFont; ?>', sans-serif;
         }
+        html {
+            background-color: #0a0a0f;
+            overflow-x: hidden;
+        }
         body {
             font-family: var(--font-body);
-            color: var(--color-text, #1f2937);
-            background-color: var(--color-background, #ffffff);
+            color: var(--color-text, #ffffff);
+            background-color: var(--color-background, #0a0a0f);
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+        main,
+        #main {
+            background-color: #0a0a0f;
         }
         h1, h2, h3, h4, h5, h6 {
             font-family: var(--font-heading);

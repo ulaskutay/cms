@@ -8,17 +8,17 @@
 $section = $section ?? [];
 $settings = $section['settings'] ?? [];
 
-// Lamp ayarları - section verisinden al, yoksa varsayılan değerler
-$lampTitle = !empty($section['title']) ? $section['title'] : 'Fikirlerinizi hayata geçirin';
-$lampSubtitle = !empty($section['subtitle']) ? $section['subtitle'] : '';
+// Lamp ayarları - section verisinden al, yoksa varsayılan değerler - __() helper fonksiyonu kullanılıyor
+$lampTitle = __(!empty($section['title']) ? $section['title'] : 'Fikirlerinizi hayata geçirin');
+$lampSubtitle = __(!empty($section['subtitle']) ? $section['subtitle'] : '');
 $lampId = 'lamp-section-' . uniqid();
 ?>
 
-<section class="lamp-section relative flex min-h-screen md:min-h-screen flex-col items-center justify-center overflow-hidden bg-slate-950 w-full z-0" id="<?php echo esc_attr($lampId); ?>">
+<section class="lamp-section relative flex min-h-[60vh] md:min-h-screen flex-col items-center justify-center overflow-hidden bg-slate-950 w-full z-0" id="<?php echo esc_attr($lampId); ?>">
     <!-- Top Mask - Üst section'dan geçiş -->
-    <div class="lamp-top-mask absolute top-0 left-0 right-0 h-48 md:h-64 pointer-events-none z-[10]" style="background: linear-gradient(180deg, rgba(10,10,15,1) 0%, rgba(10,10,15,0.95) 20%, rgba(10,10,15,0.8) 40%, rgba(10,10,15,0.5) 60%, rgba(10,10,15,0.2) 80%, transparent 100%);"></div>
+    <div class="lamp-top-mask absolute top-0 left-0 right-0 h-24 md:h-64 pointer-events-none z-[10]" style="background: linear-gradient(180deg, rgba(10,10,15,1) 0%, rgba(10,10,15,0.95) 20%, rgba(10,10,15,0.8) 40%, rgba(10,10,15,0.5) 60%, rgba(10,10,15,0.2) 80%, transparent 100%); will-change: auto; transform: translateZ(0);"></div>
     
-    <div class="relative flex w-full flex-1 items-center justify-center isolate z-[1] lamp-container">
+    <div class="relative flex w-full flex-1 items-center justify-center isolate z-[1] lamp-container" style="min-height: 50vh;">
         
         <!-- Blur Effects -->
         <div class="lamp-blur-1 absolute top-1/2 h-48 w-full translate-y-12 scale-x-150 bg-slate-950 blur-3xl z-[1]"></div>
@@ -90,6 +90,16 @@ $lampId = 'lamp-section-' . uniqid();
     position: relative;
     background: #0a0a0f;
     overflow: hidden;
+    will-change: auto;
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+}
+
+/* Mobilde lamp section'ı tamamen gizle */
+@media (max-width: 767px) {
+    #<?php echo esc_attr($lampId); ?> {
+        display: none !important;
+    }
 }
 
 /* Fix z-index layering */
@@ -302,46 +312,142 @@ $lampId = 'lamp-section-' . uniqid();
 /* Responsive Adjustments */
 @media (max-width: 767px) {
     #<?php echo esc_attr($lampId); ?> {
-        min-height: 60vh;
-        padding: 1rem 0 2rem;
+        min-height: 60vh !important;
+        max-height: 100vh;
+        padding: 2rem 0 3rem;
+        overflow: visible !important;
+        position: relative;
     }
     
     #<?php echo esc_attr($lampId); ?> > div:first-of-type {
-        scale: 1;
-        transform: none;
+        scale: 1 !important;
+        transform: none !important;
+        min-height: 50vh;
+    }
+    
+    #<?php echo esc_attr($lampId); ?> .lamp-container {
+        min-height: 50vh;
+        overflow: visible;
     }
     
     #<?php echo esc_attr($lampId); ?> .lamp-content {
-        transform: translateY(0);
+        transform: translateY(0) !important;
         padding-top: 1rem;
-        margin-top: 8rem;
+        margin-top: 6rem;
         width: 100%;
+        position: relative;
+        z-index: 10;
     }
     
     #<?php echo esc_attr($lampId); ?> .lamp-title {
-        margin-top: 6rem;
+        margin-top: 4rem !important;
+        font-size: 1.875rem !important;
+        line-height: 1.2;
+        padding: 0.75rem 1rem;
+        word-break: break-word;
+    }
+    
+    #<?php echo esc_attr($lampId); ?> .lamp-bulb-wrapper {
+        transform: translate(-50%, -50%) scale(0.7) !important;
+        top: 30% !important;
+    }
+    
+    #<?php echo esc_attr($lampId); ?> .lamp-bulb-wrapper.visible {
+        transform: translate(-50%, -50%) scale(0.75) !important;
     }
     
     #<?php echo esc_attr($lampId); ?> .lamp-glow-1 {
-        width: 10rem;
-        height: 6rem;
+        width: 8rem !important;
+        height: 5rem !important;
         transform: translate(-50%, -50%) !important;
     }
     
     #<?php echo esc_attr($lampId); ?> .lamp-glow-1.visible {
-        width: 10rem;
+        width: 8rem !important;
     }
     
     #<?php echo esc_attr($lampId); ?> .lamp-glow-center {
-        width: 18rem;
-        height: 8rem;
+        width: 16rem !important;
+        height: 7rem !important;
         transform: translate(-50%, -50%) !important;
     }
     
+    #<?php echo esc_attr($lampId); ?> .lamp-glow-layer-1,
+    #<?php echo esc_attr($lampId); ?> .lamp-glow-layer-2 {
+        transform: translate(-50%, -50%) scale(0.8) !important;
+    }
+    
+    #<?php echo esc_attr($lampId); ?> .lamp-top-mask {
+        height: 2rem !important;
+    }
+    
+    /* Mobilde animasyonları basitleştir ve ağır efektleri kaldır */
+    #<?php echo esc_attr($lampId); ?> .lamp-bulb-wrapper,
+    #<?php echo esc_attr($lampId); ?> .lamp-glow-1,
+    #<?php echo esc_attr($lampId); ?> .lamp-glow-center,
     #<?php echo esc_attr($lampId); ?> .lamp-title {
-        line-height: 1.2;
-        padding: 0.75rem 0;
-        word-break: break-word;
+        transition-duration: 0.8s !important;
+        transition-delay: 0s !important;
+    }
+    
+    /* Mobilde ağır blur efektlerini kaldır */
+    #<?php echo esc_attr($lampId); ?> .lamp-blur-1 {
+        display: none !important;
+    }
+    
+    /* Mobilde glow layer'ları devre dışı bırak */
+    #<?php echo esc_attr($lampId); ?> .lamp-glow-layer-1,
+    #<?php echo esc_attr($lampId); ?> .lamp-glow-layer-2 {
+        display: none !important;
+    }
+    
+    /* Mobilde drop-shadow efektlerini kaldır */
+    #<?php echo esc_attr($lampId); ?> .lamp-bulb-wrapper.visible .lamp-bulb-container {
+        filter: drop-shadow(0 0 20px rgba(96, 165, 250, 0.6)) !important;
+        animation: none !important;
+    }
+    
+    /* Mobilde infinite animasyonları durdur */
+    #<?php echo esc_attr($lampId); ?> .lamp-bulb-wrapper.visible {
+        animation: none !important;
+    }
+    
+    /* Mobilde glow efektlerini basitleştir */
+    #<?php echo esc_attr($lampId); ?> .lamp-glow-1 {
+        opacity: 0.3 !important;
+        filter: blur(40px) !important;
+    }
+    
+    #<?php echo esc_attr($lampId); ?> .lamp-glow-center {
+        opacity: 0.2 !important;
+        filter: blur(30px) !important;
+    }
+    
+    /* Backdrop-blur'u kaldır - 3. div elementi */
+    #<?php echo esc_attr($lampId); ?> .lamp-container > div:nth-child(3) {
+        display: none !important;
+    }
+    
+    /* Will-change optimizasyonu */
+    #<?php echo esc_attr($lampId); ?> * {
+        will-change: auto !important;
+    }
+}
+
+/* Kullanıcı azaltılmış hareket tercih ediyorsa animasyonları durdur */
+@media (prefers-reduced-motion: reduce) {
+    #<?php echo esc_attr($lampId); ?> * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    
+    #<?php echo esc_attr($lampId); ?> .lamp-bulb-wrapper.visible {
+        animation: none !important;
+    }
+    
+    #<?php echo esc_attr($lampId); ?> .lamp-bulb-wrapper.visible .lamp-bulb-container {
+        animation: none !important;
     }
 }
 
@@ -360,52 +466,117 @@ $lampId = 'lamp-section-' . uniqid();
 (function() {
     'use strict';
     
-    const lampSection = document.getElementById('<?php echo esc_js($lampId); ?>');
-    if (!lampSection) return;
+    // Global hata yakalama
+    try {
+        // DOM yüklenene kadar bekle
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initLampSection);
+        } else {
+            // DOM zaten yüklü, hemen çalıştır
+            initLampSection();
+        }
+    } catch (e) {
+        console.error('Lamp section initialization error:', e);
+    }
     
-    const title = lampSection.querySelector('.lamp-title');
-    const glow1 = lampSection.querySelector('.lamp-glow-1');
-    const glowCenter = lampSection.querySelector('.lamp-glow-center');
-    const lampBulb = lampSection.querySelector('.lamp-bulb-wrapper');
-    
-    // Scroll animasyonu için Intersection Observer
-    const observerOptions = {
-        threshold: 0.2,
-        rootMargin: '0px'
-    };
-    
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                // Ampul yakma efekti - önce ampul yanıyor
-                if (lampBulb) {
-                    lampBulb.classList.add('visible');
-                }
-                
-                // Glow animasyonları - ampulden sonra (daha yavaş)
-                setTimeout(() => {
-                    if (glow1) {
-                        glow1.classList.add('visible');
-                    }
-                    if (glowCenter) {
-                        glowCenter.classList.add('visible');
-                    }
-                }, 600);
-                
-                // Title animasyonu - en son (daha yavaş)
-                setTimeout(() => {
-                    if (title) {
-                        title.classList.add('visible');
-                    }
-                }, 1500);
-                
-                // Unobserve after animation
-                observer.unobserve(entry.target);
+    function initLampSection() {
+        try {
+            const lampSection = document.getElementById('<?php echo esc_js($lampId); ?>');
+            if (!lampSection) {
+                console.warn('Lamp section not found:', '<?php echo esc_js($lampId); ?>');
+                return;
             }
-        });
-    }, observerOptions);
-    
-    observer.observe(lampSection);
+            
+            const title = lampSection.querySelector('.lamp-title');
+            const glow1 = lampSection.querySelector('.lamp-glow-1');
+            const glowCenter = lampSection.querySelector('.lamp-glow-center');
+            const lampBulb = lampSection.querySelector('.lamp-bulb-wrapper');
+            
+            // Mobilde daha basit animasyon - performans için
+            const isMobile = window.innerWidth < 768;
+            
+            // IntersectionObserver desteği kontrolü
+            if (typeof IntersectionObserver === 'undefined') {
+                // Fallback: Direkt görünür yap
+                showElements(lampBulb, glow1, glowCenter, title, isMobile);
+                return;
+            }
+            
+            // Scroll animasyonu için Intersection Observer
+            const observerOptions = {
+                threshold: isMobile ? 0.1 : 0.2,
+                rootMargin: isMobile ? '50px' : '0px'
+            };
+            
+            let hasAnimated = false;
+            let observer = null;
+            
+            try {
+                observer = new IntersectionObserver((entries) => {
+                    try {
+                        entries.forEach(entry => {
+                            if (entry.isIntersecting && !hasAnimated) {
+                                hasAnimated = true;
+                                
+                                // Mobilde daha hızlı animasyon
+                                if (isMobile) {
+                                    showElements(lampBulb, glow1, glowCenter, title, true);
+                                } else {
+                                    // Desktop'ta kademeli animasyon
+                                    if (lampBulb) {
+                                        lampBulb.classList.add('visible');
+                                    }
+                                    
+                                    setTimeout(() => {
+                                        if (glow1) glow1.classList.add('visible');
+                                        if (glowCenter) glowCenter.classList.add('visible');
+                                    }, 600);
+                                    
+                                    setTimeout(() => {
+                                        if (title) title.classList.add('visible');
+                                    }, 1500);
+                                }
+                                
+                                // Unobserve after animation
+                                if (observer && entry.target) {
+                                    try {
+                                        observer.unobserve(entry.target);
+                                    } catch (e) {
+                                        console.warn('Unobserve error:', e);
+                                    }
+                                }
+                            }
+                        });
+                    } catch (e) {
+                        console.error('IntersectionObserver callback error:', e);
+                        showElements(lampBulb, glow1, glowCenter, title, isMobile);
+                    }
+                }, observerOptions);
+                
+                observer.observe(lampSection);
+            } catch (e) {
+                console.error('IntersectionObserver creation error:', e);
+                // Fallback: Direkt görünür yap
+                showElements(lampBulb, glow1, glowCenter, title, isMobile);
+            }
+            
+            // Helper function - güvenli element gösterimi
+            function showElements(bulb, glow1El, glowCenterEl, titleEl, mobile) {
+                try {
+                    if (bulb) bulb.classList.add('visible');
+                    if (glow1El) glow1El.classList.add('visible');
+                    if (glowCenterEl) glowCenterEl.classList.add('visible');
+                    if (titleEl) titleEl.classList.add('visible');
+                } catch (e) {
+                    console.error('Show elements error:', e);
+                }
+            }
+            
+        } catch (e) {
+            console.error('Lamp section init error:', e);
+            // Kritik hata durumunda hiçbir şey yapma - sayfa çalışmaya devam etsin
+        }
+    }
 })();
 </script>
 

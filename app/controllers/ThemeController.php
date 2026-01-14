@@ -77,22 +77,54 @@ class ThemeController extends Controller {
         $customJs = $this->themeManager->getCustomCode('js');
         $fonts = $this->themeManager->getAvailableFonts();
         
-        // Debug için
-        error_log('Theme customize - Theme: ' . print_r($theme, true));
-        error_log('Theme customize - Settings: ' . print_r($settings, true));
-        error_log('Theme customize - Sections: ' . print_r($sections, true));
+        // Önce tema klasöründeki customize sayfasını kontrol et
+        $themesPath = $this->themeManager->getThemesPath();
+        $themeCustomizePath = $themesPath . '/' . $slug . '/views/admin/customize.php';
         
-        $this->view('admin/themes/customize', [
-            'title' => 'Tema Özelleştirici - ' . $theme['name'],
-            'currentPage' => 'themes',
-            'theme' => $theme,
-            'settings' => $settings,
-            'sections' => $sections,
-            'customCss' => $customCss,
-            'customJs' => $customJs,
-            'availableFonts' => $fonts,
-            'themeManager' => $this->themeManager
-        ]);
+        // Realpath ile dosya yolunu normalize et (boşluk ve özel karakterler için)
+        $realCustomizePath = realpath($themeCustomizePath);
+        if ($realCustomizePath === false) {
+            $realCustomizePath = $themeCustomizePath;
+        }
+        
+        // Tema özel customize sayfası varsa onu kullan, yoksa varsayılanı kullan
+        if (file_exists($realCustomizePath)) {
+            // Tema özel customize sayfasını direkt include et
+            $viewData = [
+                'title' => 'Tema Özelleştirici - ' . $theme['name'],
+                'currentPage' => 'themes',
+                'theme' => $theme,
+                'settings' => $settings,
+                'sections' => $sections,
+                'customCss' => $customCss,
+                'customJs' => $customJs,
+                'availableFonts' => $fonts,
+                'themeManager' => $this->themeManager
+            ];
+            
+            // Data'yı extract et
+            extract($viewData);
+            
+            // ViewRenderer instance'ını ekle
+            $renderer = ViewRenderer::getInstance();
+            $themeLoader = ThemeLoader::getInstance();
+            
+            // Tema customize sayfasını include et
+            require $realCustomizePath;
+        } else {
+            // Varsayılan customize sayfasını kullan
+            $this->view('admin/themes/customize', [
+                'title' => 'Tema Özelleştirici - ' . $theme['name'],
+                'currentPage' => 'themes',
+                'theme' => $theme,
+                'settings' => $settings,
+                'sections' => $sections,
+                'customCss' => $customCss,
+                'customJs' => $customJs,
+                'availableFonts' => $fonts,
+                'themeManager' => $this->themeManager
+            ]);
+        }
     }
     
     /**
@@ -103,20 +135,30 @@ class ThemeController extends Controller {
         header('Content-Type: application/json');
         
         try {
-            $data = json_decode(file_get_contents('php://input'), true);
+            $rawInput = file_get_contents('php://input');
+            $data = json_decode($rawInput, true);
             
-            if (!$data) {
+            if (!$data || json_last_error() !== JSON_ERROR_NONE) {
+                // JSON decode başarısız olduysa $_POST'u dene
                 $data = $_POST;
             }
             
             $slug = $data['theme_slug'] ?? null;
             $settings = $data['settings'] ?? [];
             
-            // Debug: Gelen footer_bottom_links'i logla
-            if (isset($settings['custom']['footer_bottom_links'])) {
-                error_log("ThemeController - footer_bottom_links received: " . json_encode($settings['custom']['footer_bottom_links']));
-            } else {
-                error_log("ThemeController - footer_bottom_links NOT in settings. Custom keys: " . json_encode(array_keys($settings['custom'] ?? [])));
+            // Eğer settings bir JSON string ise decode et
+            if (is_string($settings)) {
+                $decoded = json_decode($settings, true);
+                if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                    $settings = $decoded;
+                } else {
+                    throw new Exception('Geçersiz ayar formatı: JSON decode hatası');
+                }
+            }
+            
+            // Settings'in array olduğundan emin ol
+            if (!is_array($settings)) {
+                throw new Exception('Ayarlar bir array olmalıdır. Alınan tip: ' . gettype($settings));
             }
             
             if (!$slug) {

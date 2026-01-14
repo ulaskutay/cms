@@ -9,6 +9,11 @@ class HomeController extends Controller
 
     public function index()
     {
+        // ThemeLoader'ı yükle ve ayarları yenile (customize değişikliklerinin yansıması için)
+        require_once __DIR__ . '/../../core/ThemeLoader.php';
+        $themeLoader = ThemeLoader::getInstance();
+        $themeLoader->refreshSettings();
+        
         // Slider model'ini yükle
         require_once __DIR__ . '/../models/Slider.php';
         require_once __DIR__ . '/../models/SliderItem.php';
@@ -47,14 +52,40 @@ class HomeController extends Controller
             $postModel = new Post();
             $categoryModel = new PostCategory();
 
+            // Emlak kategorisini bul
+            $emlakCategory = $categoryModel->findBySlug('emlak');
+            
             // Sayfalama
             $page = isset($_GET['p']) ? max(1, (int) $_GET['p']) : 1;
             $perPage = 10;
             $offset = ($page - 1) * $perPage;
 
-            // Yazıları getir
-            $posts = $postModel->getPublished($perPage, $offset);
-            $totalPosts = $postModel->getCountByStatus('published');
+            // Sadece emlak kategorisindeki yazıları getir
+            if ($emlakCategory) {
+                // Önce toplam sayıyı al
+                $allPosts = $postModel->getByCategory($emlakCategory['id']);
+                $totalPosts = count($allPosts);
+                
+                // Sayfalama için slice yap
+                $posts = array_slice($allPosts, $offset, $perPage);
+            } else {
+                // Emlak kategorisi yoksa boş liste
+                $posts = [];
+                $totalPosts = 0;
+            }
+            
+            // Post içeriklerine çeviri filter'larını uygula
+            if (function_exists('apply_filters')) {
+                foreach ($posts as &$post) {
+                    $post['title'] = apply_filters('post_title', $post['title']);
+                    if (!empty($post['excerpt'])) {
+                        $post['excerpt'] = apply_filters('post_excerpt', $post['excerpt']);
+                    }
+                }
+                unset($post);
+            }
+            
+            // $totalPosts yukarıda hesaplandı (emlak kategorisi için)
             $totalPages = ceil($totalPosts / $perPage);
 
             // Kategorileri getir (yazı sayısıyla birlikte)
@@ -63,8 +94,24 @@ class HomeController extends Controller
                 $cat['post_count'] = $categoryModel->getPostCount($cat['id']);
             }
 
-            // Son yazılar (sidebar için)
-            $recentPosts = $postModel->getRecent(5);
+            // Son yazılar (sidebar için) - Sadece emlak kategorisinden
+            if ($emlakCategory) {
+                $allRecentPosts = $postModel->getByCategory($emlakCategory['id'], 5);
+                $recentPosts = array_slice($allRecentPosts, 0, 5);
+            } else {
+                $recentPosts = [];
+            }
+            
+            // Son yazılara da çeviri filter'larını uygula
+            if (function_exists('apply_filters')) {
+                foreach ($recentPosts as &$post) {
+                    $post['title'] = apply_filters('post_title', $post['title']);
+                    if (!empty($post['excerpt'])) {
+                        $post['excerpt'] = apply_filters('post_excerpt', $post['excerpt']);
+                    }
+                }
+                unset($post);
+            }
 
             // ViewRenderer'ı al ve layout ayarla
             require_once __DIR__ . '/../../core/ViewRenderer.php';
@@ -117,6 +164,15 @@ class HomeController extends Controller
 
         // Görüntülenme sayısını artır
         $postModel->incrementViews($post['id']);
+
+        // Çeviri filter'larını uygula
+        if (function_exists('apply_filters')) {
+            $post['title'] = apply_filters('post_title', $post['title']);
+            $post['content'] = apply_filters('post_content', $post['content']);
+            if (!empty($post['excerpt'])) {
+                $post['excerpt'] = apply_filters('post_excerpt', $post['excerpt']);
+            }
+        }
 
         // İlgili yazılar
         $relatedPosts = [];
@@ -206,15 +262,31 @@ class HomeController extends Controller
 
     /**
      * İletişim sayfası
+     * Not: Modül route'ları öncelikli olduğu için bu metod sadece fallback olarak kullanılır
      */
     public function contact()
     {
         try {
-            // Aktif temayı al
+            // Önce modül route'unu kontrol et (modül varsa zaten çağrılmış olmalı)
+            require_once __DIR__ . '/../../core/ModuleLoader.php';
+            $moduleLoader = ModuleLoader::getInstance();
+            
+            // Modül route'u varsa ve işlenmişse, buraya gelmemeli
+            // Ama yine de kontrol edelim
+            $contactModule = $moduleLoader->getModule('contact');
+            if ($contactModule && $moduleLoader->isModuleActiveInDB('contact')) {
+                // Modül aktifse, modül controller'ını çağır
+                $controller = $moduleLoader->getModuleController('contact');
+                if ($controller && method_exists($controller, 'frontend_index')) {
+                    $controller->frontend_index();
+                    exit;
+                }
+            }
+            
+            // Fallback: Tema contact template'i varsa onu kullan
             $activeTheme = get_option('active_theme', 'starter');
             $templatePath = __DIR__ . '/../../themes/' . $activeTheme . '/contact.php';
             
-            // Tema contact template'i varsa onu kullan
             if (file_exists($templatePath)) {
                 // ThemeLoader'ı yükle
                 require_once __DIR__ . '/../../core/ThemeLoader.php';
@@ -235,7 +307,7 @@ class HomeController extends Controller
                 exit;
             }
             
-            // Fallback: Eski view sistemini kullan
+            // Son fallback: Eski view sistemini kullan
             require_once __DIR__ . '/../../core/ViewRenderer.php';
             $renderer = ViewRenderer::getInstance();
             $renderer->setLayout('default');
@@ -405,6 +477,15 @@ class HomeController extends Controller
 
         // Görüntülenme sayısını artır
         $pageModel->incrementViews($page['id']);
+
+        // Çeviri filter'larını uygula
+        if (function_exists('apply_filters')) {
+            $page['title'] = apply_filters('page_title', $page['title']);
+            $page['content'] = apply_filters('page_content', $page['content']);
+            if (!empty($page['excerpt'])) {
+                $page['excerpt'] = apply_filters('page_excerpt', $page['excerpt']);
+            }
+        }
 
         // Özel alanları getir
         $customFields = $pageModel->getCustomFields($page['id']);

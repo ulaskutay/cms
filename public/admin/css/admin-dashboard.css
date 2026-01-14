@@ -176,15 +176,11 @@
 }
 
 /* Main content margin for fixed sidebar */
-.main-content-with-sidebar {
-    margin-left: 16rem; /* 256px = w-64 */
-}
+/* Note: margin-left is now handled by Tailwind's lg:ml-64 class in HTML */
+/* This class is kept for backward compatibility but doesn't add margin anymore */
 
 /* Responsive: Hide sidebar on mobile, show main content full width */
 @media (max-width: 1024px) {
-    .main-content-with-sidebar {
-        margin-left: 0;
-    }
     
     .sidebar-fixed {
         transform: translateX(-100%);

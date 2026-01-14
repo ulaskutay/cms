@@ -17,11 +17,13 @@ $showCtaValue = $themeLoader->getSetting('show_cta', true, 'header');
 $showCta = !($showCtaValue === '0' || $showCtaValue === false || $showCtaValue === 'false');
 
 // CTA metin ve link
-$ctaTextValue = $themeLoader->getSetting('cta_text', 'Hemen Başla', 'header');
-$ctaText = !empty($ctaTextValue) ? $ctaTextValue : 'Hemen Başla';
+$ctaTextValue = $themeLoader->getSetting('cta_text', __('Hemen Başla'), 'header');
+$ctaText = !empty($ctaTextValue) ? $ctaTextValue : __('Hemen Başla');
 
 $ctaLinkValue = $themeLoader->getSetting('cta_link', '/contact', 'header');
-$ctaLink = !empty($ctaLinkValue) ? $ctaLinkValue : '/contact';
+$ctaLinkRaw = !empty($ctaLinkValue) ? $ctaLinkValue : '/contact';
+// CTA linkini dil prefix'i ile oluştur
+$ctaLink = function_exists('localized_url') ? localized_url($ctaLinkRaw) : $ctaLinkRaw;
 
 // Header stiline göre class'ları belirle
 $isFixed = in_array($headerStyle, ['fixed', 'transparent']);
@@ -33,7 +35,7 @@ $headerMenu = get_menu('header');
 $menuItems = $headerMenu['items'] ?? [];
 
 // Site ayarları - Logo sadece tema özelleştirmeden gelir
-$siteName = get_option('site_name', 'Site Adı');
+$siteName = get_option('site_name', __('Site Adı'));
 $siteLogo = $themeLoader->getLogo();
 
 // Logo boyutları
@@ -49,15 +51,17 @@ if (!function_exists('renderCodeticDesktopMenuItem')) {
 function renderCodeticDesktopMenuItem($item, $level = 0, $themeLoader = null, $textColor = '#1f2937') {
     $hasChildren = !empty($item['children']);
     $isRoot = $level === 0;
+    // URL'i dil prefix'i ile oluştur
+    $itemUrl = function_exists('get_localized_menu_url') ? get_localized_menu_url($item['url']) : $item['url'];
     
     if ($isRoot): ?>
         <?php if ($hasChildren): ?>
             <div class="relative group/dropdown-<?php echo $level; ?>">
-                <a href="<?php echo esc_url($item['url']); ?>" 
+                <a href="<?php echo esc_url($itemUrl); ?>" 
                    class="font-medium transition-colors flex items-center gap-1 hover:text-primary"
                    style="color: <?php echo esc_attr($textColor); ?>;"
                    <?php echo ($item['target'] ?? '') === '_blank' ? 'target="_blank" rel="noopener noreferrer"' : ''; ?>>
-                    <?php echo esc_html($item['title']); ?>
+                    <?php echo esc_html__($item['title']); ?>
                     <svg class="w-4 h-4 transition-transform group-hover/dropdown-<?php echo $level; ?>:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                     </svg>
@@ -73,21 +77,21 @@ function renderCodeticDesktopMenuItem($item, $level = 0, $themeLoader = null, $t
                 </div>
             </div>
         <?php else: ?>
-            <a href="<?php echo esc_url($item['url']); ?>" 
+            <a href="<?php echo esc_url($itemUrl); ?>" 
                class="font-medium transition-colors hover:text-primary"
                style="color: <?php echo esc_attr($textColor); ?>;"
                <?php echo ($item['target'] ?? '') === '_blank' ? 'target="_blank" rel="noopener noreferrer"' : ''; ?>>
-                <?php echo esc_html($item['title']); ?>
+                <?php echo esc_html__($item['title']); ?>
             </a>
         <?php endif; ?>
     <?php else: ?>
         <?php if ($hasChildren): ?>
             <div class="relative group/sub-<?php echo $level; ?>">
-                <a href="<?php echo esc_url($item['url']); ?>" 
+                <a href="<?php echo esc_url($itemUrl); ?>" 
                    class="flex items-center justify-between px-4 py-2 text-gray-700 hover:bg-primary/5 hover:text-primary transition-colors"
                    <?php echo ($item['target'] ?? '') === '_blank' ? 'target="_blank" rel="noopener noreferrer"' : ''; ?>>
                     <span class="flex items-center gap-2">
-                        <?php echo esc_html($item['title']); ?>
+                        <?php echo esc_html__($item['title']); ?>
                     </span>
                     <svg class="w-4 h-4 -rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
@@ -104,10 +108,10 @@ function renderCodeticDesktopMenuItem($item, $level = 0, $themeLoader = null, $t
                 </div>
             </div>
         <?php else: ?>
-            <a href="<?php echo esc_url($item['url']); ?>" 
+            <a href="<?php echo esc_url($itemUrl); ?>" 
                class="block px-4 py-2 text-gray-700 hover:bg-primary/5 hover:text-primary transition-colors"
                <?php echo ($item['target'] ?? '') === '_blank' ? 'target="_blank" rel="noopener noreferrer"' : ''; ?>>
-                <?php echo esc_html($item['title']); ?>
+                <?php echo esc_html__($item['title']); ?>
             </a>
         <?php endif; ?>
     <?php endif;
@@ -119,13 +123,15 @@ if (!function_exists('renderCodeticMobileMenuItem')) {
 function renderCodeticMobileMenuItem($item, $level = 0) {
     $hasChildren = !empty($item['children']);
     $indent = $level * 16;
+    // URL'i dil prefix'i ile oluştur
+    $itemUrl = function_exists('get_localized_menu_url') ? get_localized_menu_url($item['url']) : $item['url'];
     ?>
     
     <?php if ($hasChildren): ?>
         <div class="mobile-dropdown" style="margin-left: <?php echo $indent; ?>px;">
             <button type="button" class="mobile-dropdown-toggle flex items-center justify-between w-full py-3 text-gray-700 <?php echo $level === 0 ? 'font-medium' : 'text-sm'; ?>">
                 <span class="flex items-center gap-2">
-                    <?php echo esc_html($item['title']); ?>
+                    <?php echo esc_html__($item['title']); ?>
                 </span>
                 <svg class="w-4 h-4 transition-transform mobile-dropdown-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
@@ -138,11 +144,11 @@ function renderCodeticMobileMenuItem($item, $level = 0) {
             </div>
         </div>
     <?php else: ?>
-        <a href="<?php echo esc_url($item['url']); ?>" 
+        <a href="<?php echo esc_url($itemUrl); ?>" 
            class="block py-3 <?php echo $level === 0 ? 'text-gray-700 font-medium' : 'text-gray-600 text-sm'; ?> hover:text-primary transition-colors"
            style="margin-left: <?php echo $indent; ?>px;"
            <?php echo ($item['target'] ?? '') === '_blank' ? 'target="_blank" rel="noopener noreferrer"' : ''; ?>>
-            <?php echo esc_html($item['title']); ?>
+            <?php echo esc_html__($item['title']); ?>
         </a>
     <?php endif;
 }
@@ -155,7 +161,26 @@ function renderCodeticMobileMenuItem($item, $level = 0) {
         <div class="relative py-3 px-4 md:px-6 navbar-container">
             <div class="flex items-center justify-between">
             <!-- Logo -->
-            <a href="/" class="flex items-center navbar-logo -ml-2 md:ml-0 pl-2 md:pl-0">
+            <?php
+            // Mevcut dil kodunu al ve logo linkini ayarla
+            $logoUrl = '/';
+            if (class_exists('ModuleLoader')) {
+                $moduleLoader = ModuleLoader::getInstance();
+                $translationController = $moduleLoader->getModuleController('translation');
+                if ($translationController && method_exists($translationController, 'getLocalizedUrl')) {
+                    $logoUrl = $translationController->getLocalizedUrl('/');
+                } else {
+                    // Fallback: Session'dan al
+                    $currentLang = isset($_SESSION['current_language']) ? $_SESSION['current_language'] : 'tr';
+                    $defaultLang = 'tr';
+                    if (function_exists('get_module_setting')) {
+                        $defaultLang = get_module_setting('translation', 'default_language', 'tr');
+                    }
+                    $logoUrl = ($currentLang === $defaultLang) ? '/' : '/' . $currentLang . '/';
+                }
+            }
+            ?>
+            <a href="<?php echo esc_url($logoUrl); ?>" class="flex items-center navbar-logo -ml-2 md:ml-0 pl-2 md:pl-0">
                 <?php if (!empty($siteLogo)): ?>
                     <?php
                     $logoAspectRatio = $logoWidth && $logoHeight ? ($logoWidth / $logoHeight) : 2.5;
@@ -177,22 +202,27 @@ function renderCodeticMobileMenuItem($item, $level = 0) {
             <!-- Desktop Navigation -->
             <div class="hidden md:flex items-center gap-8">
                 <?php if (!empty($menuItems)): ?>
-                    <?php foreach ($menuItems as $item): ?>
+                    <?php foreach ($menuItems as $item): 
+                        // URL'i dil prefix'i ile oluştur
+                        $itemUrl = function_exists('get_localized_menu_url') ? get_localized_menu_url($item['url']) : $item['url'];
+                    ?>
                         <?php if (!empty($item['children'])): ?>
                             <!-- Dropdown Menu Item -->
                             <div class="relative group/nav-dropdown">
-                                <a href="<?php echo esc_url($item['url']); ?>" 
+                                <a href="<?php echo esc_url($itemUrl); ?>" 
                                    class="navbar-menu-item text-[#A1A1AA] hover:text-white transition-colors duration-300 flex items-center gap-1"
                                    <?php echo ($item['target'] ?? '') === '_blank' ? 'target="_blank" rel="noopener noreferrer"' : ''; ?>>
-                                    <?php echo esc_html($item['title']); ?>
+                                    <?php echo esc_html__($item['title']); ?>
                                     <svg class="w-4 h-4 transition-transform group-hover/nav-dropdown:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                                     </svg>
                                 </a>
                                 <div class="absolute top-full left-0 pt-2 opacity-0 invisible group-hover/nav-dropdown:opacity-100 group-hover/nav-dropdown:visible transition-all duration-300 ease-out z-50">
                                     <div class="bg-[#0B0B0B]/90 backdrop-blur-2xl border border-white/8 rounded-2xl shadow-xl py-2 min-w-[220px]">
-                                        <?php foreach ($item['children'] as $child): ?>
-                                            <a href="<?php echo esc_url($child['url']); ?>" 
+                                        <?php foreach ($item['children'] as $child): 
+                                            $childUrl = function_exists('get_localized_menu_url') ? get_localized_menu_url($child['url']) : $child['url'];
+                                        ?>
+                                            <a href="<?php echo esc_url($childUrl); ?>" 
                                                class="block px-4 py-2 text-[#A1A1AA] hover:text-white hover:bg-white/5 transition-colors duration-300"
                                                <?php echo ($child['target'] ?? '') === '_blank' ? 'target="_blank" rel="noopener noreferrer"' : ''; ?>>
                                                 <?php echo esc_html($child['title']); ?>
@@ -202,18 +232,24 @@ function renderCodeticMobileMenuItem($item, $level = 0) {
                                 </div>
                             </div>
                         <?php else: ?>
-                            <a href="<?php echo esc_url($item['url']); ?>" 
+                            <a href="<?php echo esc_url($itemUrl); ?>" 
                                class="navbar-menu-item text-[#A1A1AA] hover:text-white transition-colors duration-300"
                                <?php echo ($item['target'] ?? '') === '_blank' ? 'target="_blank" rel="noopener noreferrer"' : ''; ?>>
-                                <?php echo esc_html($item['title']); ?>
+                                <?php echo esc_html__($item['title']); ?>
                             </a>
                         <?php endif; ?>
                     <?php endforeach; ?>
                 <?php else: ?>
-                    <a href="/" class="navbar-menu-item text-[#A1A1AA] hover:text-white transition-colors duration-300">Ana Sayfa</a>
-                    <a href="/blog" class="navbar-menu-item text-[#A1A1AA] hover:text-white transition-colors duration-300">Blog</a>
-                    <a href="/contact" class="navbar-menu-item text-[#A1A1AA] hover:text-white transition-colors duration-300">İletişim</a>
+                    <a href="<?php echo function_exists('localized_url') ? localized_url('/') : '/'; ?>" class="navbar-menu-item text-[#A1A1AA] hover:text-white transition-colors duration-300"><?php echo esc_html__('Ana Sayfa'); ?></a>
+                    <a href="<?php echo function_exists('localized_url') ? localized_url('/blog') : '/blog'; ?>" class="navbar-menu-item text-[#A1A1AA] hover:text-white transition-colors duration-300"><?php echo esc_html__('Blog'); ?></a>
+                    <a href="<?php echo function_exists('localized_url') ? localized_url('/contact') : '/contact'; ?>" class="navbar-menu-item text-[#A1A1AA] hover:text-white transition-colors duration-300"><?php echo esc_html__('İletişim'); ?></a>
                 <?php endif; ?>
+                <?php 
+                // Dil switcher (Translation modülü aktifse)
+                if (function_exists('do_action')) {
+                    do_action('theme_header_after_menu');
+                }
+                ?>
                 <?php if ($showCta): ?>
                     <a href="<?php echo esc_url($ctaLink); ?>" class="navbar-cta-btn">
                         <?php echo esc_html($ctaText); ?>
@@ -222,7 +258,7 @@ function renderCodeticMobileMenuItem($item, $level = 0) {
             </div>
             
             <!-- Mobile Menu Button -->
-            <button id="mobile-menu-btn" class="md:hidden p-2 hover:bg-white/5 rounded-lg transition-colors text-white" aria-label="Menüyü aç/kapat" aria-expanded="false" aria-controls="mobile-menu">
+            <button id="mobile-menu-btn" class="md:hidden p-2 hover:bg-white/5 rounded-lg transition-colors text-white" aria-label="<?php echo esc_attr__('Menüyü aç/kapat'); ?>" aria-expanded="false" aria-controls="mobile-menu">
                 <svg class="w-6 h-6 menu-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
                 <svg class="w-6 h-6 close-icon hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
@@ -232,18 +268,27 @@ function renderCodeticMobileMenuItem($item, $level = 0) {
         <div id="mobile-menu" class="hidden md:hidden mt-6 pt-6 border-t border-white/10">
             <div class="flex flex-col gap-4">
                 <?php if (!empty($menuItems)): ?>
-                    <?php foreach ($menuItems as $item): ?>
-                        <a href="<?php echo esc_url($item['url']); ?>" 
+                    <?php foreach ($menuItems as $item): 
+                        // URL'i dil prefix'i ile oluştur
+                        $mobileItemUrl = function_exists('get_localized_menu_url') ? get_localized_menu_url($item['url']) : $item['url'];
+                    ?>
+                        <a href="<?php echo esc_url($mobileItemUrl); ?>" 
                            class="text-left text-[#A1A1AA] hover:text-white transition-colors duration-300 py-2"
                            <?php echo ($item['target'] ?? '') === '_blank' ? 'target="_blank" rel="noopener noreferrer"' : ''; ?>>
-                            <?php echo esc_html($item['title']); ?>
+                            <?php echo esc_html__($item['title']); ?>
                         </a>
                     <?php endforeach; ?>
                 <?php else: ?>
-                    <a href="/" class="text-left text-[#A1A1AA] hover:text-white transition-colors duration-300 py-2">Ana Sayfa</a>
-                    <a href="/blog" class="text-left text-[#A1A1AA] hover:text-white transition-colors duration-300 py-2">Blog</a>
-                    <a href="/contact" class="text-left text-[#A1A1AA] hover:text-white transition-colors duration-300 py-2">İletişim</a>
+                    <a href="<?php echo function_exists('localized_url') ? localized_url('/') : '/'; ?>" class="text-left text-[#A1A1AA] hover:text-white transition-colors duration-300 py-2"><?php echo esc_html__('Ana Sayfa'); ?></a>
+                    <a href="<?php echo function_exists('localized_url') ? localized_url('/blog') : '/blog'; ?>" class="text-left text-[#A1A1AA] hover:text-white transition-colors duration-300 py-2"><?php echo esc_html__('Blog'); ?></a>
+                    <a href="<?php echo function_exists('localized_url') ? localized_url('/contact') : '/contact'; ?>" class="text-left text-[#A1A1AA] hover:text-white transition-colors duration-300 py-2"><?php echo esc_html__('İletişim'); ?></a>
                 <?php endif; ?>
+                <?php 
+                // Dil switcher (Mobile menü için)
+                if (function_exists('do_action')) {
+                    do_action('theme_header_after_menu');
+                }
+                ?>
                 <?php if ($showCta): ?>
                     <a href="<?php echo esc_url($ctaLink); ?>" class="mt-2 navbar-cta-btn-mobile text-center">
                         <?php echo esc_html($ctaText); ?>
@@ -265,7 +310,7 @@ function renderCodeticMobileMenuItem($item, $level = 0) {
 <div id="search-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden items-center justify-center" style="display: none;">
     <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full mx-4 p-6 transform transition-all">
         <div class="flex items-center justify-between mb-4">
-            <h3 class="text-xl font-bold text-gray-900">Ara</h3>
+            <h3 class="text-xl font-bold text-gray-900"><?php echo esc_html__('Ara'); ?></h3>
             <button id="search-modal-close" class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
                 <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
@@ -274,11 +319,11 @@ function renderCodeticMobileMenuItem($item, $level = 0) {
             <input type="text" 
                    name="q" 
                    id="search-input"
-                   placeholder="Aradığınız konuyu yazın..." 
+                   placeholder="<?php echo esc_attr__('Aradığınız konuyu yazın...'); ?>" 
                    class="w-full px-6 py-4 pl-14 rounded-xl bg-gray-50 border-2 border-gray-200 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-primary focus:bg-white text-lg font-medium transition-all">
             <svg class="w-6 h-6 absolute left-5 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
             <button type="submit" class="absolute right-3 top-1/2 transform -translate-y-1/2 px-6 py-3 btn-primary rounded-lg font-medium hover:opacity-90 transition-opacity">
-                Ara
+                <?php echo esc_html__('Ara'); ?>
             </button>
         </form>
     </div>

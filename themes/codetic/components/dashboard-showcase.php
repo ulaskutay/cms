@@ -7,19 +7,40 @@
 $section = $section ?? [];
 $settings = $section['settings'] ?? [];
 
-// Section ayarları
-$sectionTitle = $section['title'] ?? 'Güçlü Yönetim Paneli';
-$sectionSubtitle = $section['subtitle'] ?? 'Tek bir yerden tüm içeriklerinizi yönetin';
-$sectionDescription = $section['description'] ?? 'Modern ve kullanıcı dostu arayüzümüz ile web sitenizi, içeriklerinizi ve müşterilerinizi kolayca yönetin. Gerçek zamanlı istatistikler, kolay içerik düzenleme ve güçlü SEO araçları.';
-$badge = $settings['badge'] ?? 'Yönetim Paneli';
+// Section ayarları - __() helper fonksiyonu kullanılıyor
+$sectionTitle = __($section['title'] ?? 'Güçlü Yönetim Paneli');
+$sectionSubtitle = __($section['subtitle'] ?? 'Tek bir yerden tüm içeriklerinizi yönetin');
+$sectionDescription = __($section['description'] ?? 'Modern ve kullanıcı dostu arayüzümüz ile web sitenizi, içeriklerinizi ve müşterilerinizi kolayca yönetin. Gerçek zamanlı istatistikler, kolay içerik düzenleme ve güçlü SEO araçları.');
+$badge = __($settings['badge'] ?? 'Yönetim Paneli');
 
-// Özellik listesi
-$features = $section['features'] ?? [
-    'Sürükle-bırak içerik düzenleme',
-    'Gerçek zamanlı analitik',
-    'SEO optimizasyon araçları',
-    'Çoklu dil desteği',
-    'Otomatik yedekleme'
+// Özellik listesi - __() helper fonksiyonu kullanılıyor
+$defaultFeatures = [
+    __('Sürükle-bırak içerik düzenleme'),
+    __('Gerçek zamanlı analitik'),
+    __('SEO optimizasyon araçları'),
+    __('Çoklu dil desteği'),
+    __('Otomatik yedekleme')
+];
+$features = $section['features'] ?? $defaultFeatures;
+$features = array_map(function($feature) {
+    return __($feature);
+}, $features);
+
+// Mockup içindeki metinler için çeviri
+$mockupTexts = [
+    'total_visitors' => __('Toplam Ziyaretçi'),
+    'page_views' => __('Sayfa Görüntüleme'),
+    'conversion_rate' => __('Dönüşüm Oranı'),
+    'active_users' => __('Aktif Kullanıcı'),
+    'now' => __('Şu an'),
+    'visitor_stats' => __('Ziyaretçi İstatistikleri'),
+    'days_7' => __('7 Gün'),
+    'days_30' => __('30 Gün'),
+    'dashboard' => __('Dashboard'),
+    'contents' => __('İçerikler'),
+    'analytics' => __('Analitik'),
+    'users' => __('Kullanıcılar'),
+    'settings' => __('Ayarlar'),
 ];
 
 $sectionId = 'dashboard-showcase-' . uniqid();
@@ -118,23 +139,23 @@ $sectionId = 'dashboard-showcase-' . uniqid();
                                 <nav class="space-y-2">
                                     <div class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-blue-500/20 text-blue-300">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-                                        <span class="text-sm">Dashboard</span>
+                                        <span class="text-sm"><?php echo esc_html($mockupTexts['dashboard']); ?></span>
                                     </div>
                                     <div class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:bg-white/5">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
-                                        <span class="text-sm">İçerikler</span>
+                                        <span class="text-sm"><?php echo esc_html($mockupTexts['contents']); ?></span>
                                     </div>
                                     <div class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:bg-white/5">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
-                                        <span class="text-sm">Analitik</span>
+                                        <span class="text-sm"><?php echo esc_html($mockupTexts['analytics']); ?></span>
                                     </div>
                                     <div class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:bg-white/5">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-                                        <span class="text-sm">Kullanıcılar</span>
+                                        <span class="text-sm"><?php echo esc_html($mockupTexts['users']); ?></span>
                                     </div>
                                     <div class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:bg-white/5">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                                        <span class="text-sm">Ayarlar</span>
+                                        <span class="text-sm"><?php echo esc_html($mockupTexts['settings']); ?></span>
                                     </div>
                                 </nav>
                             </div>
@@ -144,34 +165,34 @@ $sectionId = 'dashboard-showcase-' . uniqid();
                                 <!-- Stats Row -->
                                 <div class="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-2.5 md:gap-3 lg:gap-4">
                                     <div class="bg-[#12121a]/80 rounded-lg sm:rounded-xl p-2 sm:p-2.5 md:p-3 lg:p-4 border border-white/5">
-                                        <div class="text-[10px] sm:text-xs text-slate-500 mb-0.5 sm:mb-1">Toplam Ziyaretçi</div>
+                                        <div class="text-[10px] sm:text-xs text-slate-500 mb-0.5 sm:mb-1"><?php echo esc_html($mockupTexts['total_visitors']); ?></div>
                                         <div class="text-sm sm:text-base md:text-lg lg:text-2xl font-bold text-white">24,521</div>
                                         <div class="text-[10px] sm:text-xs text-green-400 mt-0.5 sm:mt-1">+12.5%</div>
                                     </div>
                                     <div class="bg-[#12121a]/80 rounded-lg sm:rounded-xl p-2 sm:p-2.5 md:p-3 lg:p-4 border border-white/5">
-                                        <div class="text-[10px] sm:text-xs text-slate-500 mb-0.5 sm:mb-1">Sayfa Görüntüleme</div>
+                                        <div class="text-[10px] sm:text-xs text-slate-500 mb-0.5 sm:mb-1"><?php echo esc_html($mockupTexts['page_views']); ?></div>
                                         <div class="text-sm sm:text-base md:text-lg lg:text-2xl font-bold text-white">89,432</div>
                                         <div class="text-[10px] sm:text-xs text-green-400 mt-0.5 sm:mt-1">+8.2%</div>
                                     </div>
                                     <div class="bg-[#12121a]/80 rounded-lg sm:rounded-xl p-2 sm:p-2.5 md:p-3 lg:p-4 border border-white/5">
-                                        <div class="text-[10px] sm:text-xs text-slate-500 mb-0.5 sm:mb-1">Dönüşüm Oranı</div>
+                                        <div class="text-[10px] sm:text-xs text-slate-500 mb-0.5 sm:mb-1"><?php echo esc_html($mockupTexts['conversion_rate']); ?></div>
                                         <div class="text-sm sm:text-base md:text-lg lg:text-2xl font-bold text-white">3.24%</div>
                                         <div class="text-[10px] sm:text-xs text-green-400 mt-0.5 sm:mt-1">+2.1%</div>
                                     </div>
                                     <div class="bg-[#12121a]/80 rounded-lg sm:rounded-xl p-2 sm:p-2.5 md:p-3 lg:p-4 border border-white/5">
-                                        <div class="text-[10px] sm:text-xs text-slate-500 mb-0.5 sm:mb-1">Aktif Kullanıcı</div>
+                                        <div class="text-[10px] sm:text-xs text-slate-500 mb-0.5 sm:mb-1"><?php echo esc_html($mockupTexts['active_users']); ?></div>
                                         <div class="text-sm sm:text-base md:text-lg lg:text-2xl font-bold text-white">1,842</div>
-                                        <div class="text-[10px] sm:text-xs text-blue-400 mt-0.5 sm:mt-1">Şu an</div>
+                                        <div class="text-[10px] sm:text-xs text-blue-400 mt-0.5 sm:mt-1"><?php echo esc_html($mockupTexts['now']); ?></div>
                                     </div>
                                 </div>
                                 
                                 <!-- Chart Area -->
                                 <div class="flex-1 bg-[#12121a]/80 rounded-lg sm:rounded-xl p-2.5 sm:p-3 md:p-4 lg:p-6 border border-white/5 min-h-[120px] sm:min-h-[140px] md:min-h-[160px]">
                                     <div class="flex items-center justify-between mb-2 sm:mb-3 md:mb-4">
-                                        <h3 class="text-xs sm:text-sm font-medium text-white">Ziyaretçi İstatistikleri</h3>
+                                        <h3 class="text-xs sm:text-sm font-medium text-white"><?php echo esc_html($mockupTexts['visitor_stats']); ?></h3>
                                         <div class="flex gap-1 sm:gap-2">
-                                            <span class="px-1.5 sm:px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs rounded bg-blue-500/20 text-blue-300">7 Gün</span>
-                                            <span class="px-1.5 sm:px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs rounded text-slate-500">30 Gün</span>
+                                            <span class="px-1.5 sm:px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs rounded bg-blue-500/20 text-blue-300"><?php echo esc_html($mockupTexts['days_7']); ?></span>
+                                            <span class="px-1.5 sm:px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs rounded text-slate-500"><?php echo esc_html($mockupTexts['days_30']); ?></span>
                                         </div>
                                     </div>
                                     <!-- Chart Visualization -->

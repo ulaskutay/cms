@@ -12,7 +12,11 @@ $previewUrl = admin_url('themes/preview/' . $themeSlug);
 $pageSections = [];
 if (isset($themeManager)) {
     try {
-        $sections = $themeManager->getPageSections('home') ?? [];
+        // Aktif temanın ID'sini al
+        $activeTheme = $themeManager->getActiveTheme();
+        $themeId = $activeTheme['id'] ?? null;
+        
+        $sections = $themeManager->getPageSections('home', $themeId) ?? [];
         foreach ($sections as $section) {
             $sectionId = $section['section_id'] ?? '';
             if ($sectionId) {
@@ -111,8 +115,16 @@ if (isset($settings['custom']['footer_bottom_links']['value'])) {
     <style>
         * { font-family: 'Plus Jakarta Sans', sans-serif; }
         .glass { background: rgba(255,255,255,0.03); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.08); }
-        .section-panel { max-height: 0; overflow: hidden; transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
-        .section-panel.open { max-height: 2000px; }
+        .section-panel { 
+            max-height: 0; 
+            overflow: hidden; 
+            transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+            opacity: 0;
+        }
+        .section-panel.open { 
+            max-height: 5000px; 
+            opacity: 1;
+        }
         .section-btn.active { background: linear-gradient(135deg, rgba(99,102,241,0.15) 0%, rgba(139,92,246,0.1) 100%); border-color: rgba(99,102,241,0.3); }
         .section-btn.active .section-icon { background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: white; }
         input[type="color"] { 
@@ -174,6 +186,44 @@ if (isset($settings['custom']['footer_bottom_links']['value'])) {
         #media-picker-modal input, #media-picker-modal button { color: inherit; }
         #media-picker-modal .media-picker-item { background: rgba(255,255,255,0.05) !important; }
     </style>
+    <!-- Critical: Define toggleSection immediately -->
+    <script>
+    // Section Toggle - MUST BE DEFINED BEFORE BODY LOADS
+    window.toggleSection = function(sectionId) {
+        const panel = document.getElementById(sectionId + '-panel');
+        const btn = document.querySelector('[data-section="' + sectionId + '"]');
+        
+        if (!panel || !btn) {
+            console.warn('ToggleSection: Panel or button not found for', sectionId);
+            return;
+        }
+        
+        const isOpen = panel.classList.contains('open');
+        
+        // Close all
+        var panels = document.querySelectorAll('.section-panel');
+        for (var i = 0; i < panels.length; i++) {
+            if (panels[i]) panels[i].classList.remove('open');
+        }
+        var buttons = document.querySelectorAll('.section-btn');
+        for (var i = 0; i < buttons.length; i++) {
+            if (buttons[i]) {
+                buttons[i].classList.remove('active');
+                var arrow = buttons[i].querySelector('.section-arrow');
+                if (arrow) arrow.style.transform = 'rotate(0deg)';
+            }
+        }
+        
+        // Open clicked
+        if (!isOpen) {
+            panel.classList.add('open');
+            btn.classList.add('active');
+            var arrow = btn.querySelector('.section-arrow');
+            if (arrow) arrow.style.transform = 'rotate(180deg)';
+        }
+    };
+    console.log('toggleSection function defined in head');
+    </script>
 </head>
 <body class="bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white overflow-hidden">
 
@@ -206,7 +256,7 @@ if (isset($settings['custom']['footer_bottom_links']['value'])) {
             
             <!-- Marka & Logo -->
             <div class="border-b border-white/5">
-                <button onclick="toggleSection('branding')" class="section-btn active w-full p-4 flex items-center gap-4 hover:bg-white/5 transition-all" data-section="branding">
+                <button onclick="window.toggleSection && window.toggleSection('branding')" class="section-btn active w-full p-4 flex items-center gap-4 hover:bg-white/5 transition-all" data-section="branding">
                     <div class="section-icon w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center">
                         <span class="material-symbols-outlined text-white">brush</span>
                     </div>
@@ -303,7 +353,7 @@ if (isset($settings['custom']['footer_bottom_links']['value'])) {
             
             <!-- Header Ayarları -->
             <div class="border-b border-white/5">
-                <button onclick="toggleSection('header')" class="section-btn w-full p-4 flex items-center gap-4 hover:bg-white/5 transition-all" data-section="header">
+                <button onclick="window.toggleSection && window.toggleSection('header')" class="section-btn w-full p-4 flex items-center gap-4 hover:bg-white/5 transition-all" data-section="header">
                     <div class="section-icon w-10 h-10 rounded-xl bg-slate-700/50 flex items-center justify-center">
                         <span class="material-symbols-outlined">web_asset</span>
                     </div>
@@ -363,7 +413,7 @@ if (isset($settings['custom']['footer_bottom_links']['value'])) {
             <!-- Renkler -->
             <?php if (!empty($settings['colors'])): ?>
             <div class="border-b border-white/5">
-                <button onclick="toggleSection('colors')" class="section-btn w-full p-4 flex items-center gap-4 hover:bg-white/5 transition-all" data-section="colors">
+                <button onclick="window.toggleSection && window.toggleSection('colors')" class="section-btn w-full p-4 flex items-center gap-4 hover:bg-white/5 transition-all" data-section="colors">
                     <div class="section-icon w-10 h-10 rounded-xl bg-slate-700/50 flex items-center justify-center">
                         <span class="material-symbols-outlined">palette</span>
                     </div>
@@ -394,7 +444,7 @@ if (isset($settings['custom']['footer_bottom_links']['value'])) {
             <!-- Tipografi -->
             <?php if (!empty($settings['fonts'])): ?>
             <div class="border-b border-white/5">
-                <button onclick="toggleSection('fonts')" class="section-btn w-full p-4 flex items-center gap-4 hover:bg-white/5 transition-all" data-section="fonts">
+                <button onclick="window.toggleSection && window.toggleSection('fonts')" class="section-btn w-full p-4 flex items-center gap-4 hover:bg-white/5 transition-all" data-section="fonts">
                     <div class="section-icon w-10 h-10 rounded-xl bg-slate-700/50 flex items-center justify-center">
                         <span class="material-symbols-outlined">text_fields</span>
                     </div>
@@ -408,14 +458,19 @@ if (isset($settings['custom']['footer_bottom_links']['value'])) {
                     <div class="px-4 pb-5">
                         <div class="glass rounded-xl p-4 space-y-4">
                             <?php 
-                            $fonts = ['Inter', 'Plus Jakarta Sans', 'Poppins', 'Roboto', 'Open Sans', 'Lato', 'Montserrat', 'Raleway', 'Nunito', 'DM Sans'];
+                            // ThemeManager'dan gelen kullanılabilir fontları kullan
+                            $fonts = $availableFonts ?? ['Inter', 'Poppins', 'Roboto', 'Open Sans', 'Lato', 'Montserrat', 'Raleway', 'Nunito', 'DM Sans'];
                             foreach ($settings['fonts'] as $key => $config): 
                             ?>
                             <div>
                                 <label class="block text-xs font-medium text-slate-300 mb-2"><?php echo esc_html($config['label']); ?></label>
                                 <select name="fonts[<?php echo $key; ?>]" class="w-full px-4 py-2.5 input-field rounded-lg text-sm">
-                                    <?php foreach ($fonts as $font): ?>
-                                    <option value="<?php echo $font; ?>" <?php echo ($config['value'] ?? $config['default']) === $font ? 'selected' : ''; ?> style="font-family: <?php echo $font; ?>"><?php echo $font; ?></option>
+                                    <?php foreach ($fonts as $fontKey => $fontName): 
+                                        // $fonts array'i key-value çifti olabilir veya sadece değerler olabilir
+                                        $fontValue = is_numeric($fontKey) ? $fontName : $fontKey;
+                                        $fontDisplay = is_numeric($fontKey) ? $fontName : $fontName;
+                                    ?>
+                                    <option value="<?php echo esc_attr($fontValue); ?>" <?php echo ($config['value'] ?? $config['default']) === $fontValue ? 'selected' : ''; ?> style="font-family: <?php echo esc_attr($fontDisplay); ?>"><?php echo esc_html($fontDisplay); ?></option>
                                     <?php endforeach; ?>
                                 </select>
                             </div>
@@ -428,7 +483,7 @@ if (isset($settings['custom']['footer_bottom_links']['value'])) {
             
             <!-- Footer Ayarları -->
             <div class="border-b border-white/5">
-                <button onclick="toggleSection('footer')" class="section-btn w-full p-4 flex items-center gap-4 hover:bg-white/5 transition-all" data-section="footer">
+                <button onclick="window.toggleSection && window.toggleSection('footer')" class="section-btn w-full p-4 flex items-center gap-4 hover:bg-white/5 transition-all" data-section="footer">
                     <div class="section-icon w-10 h-10 rounded-xl bg-slate-700/50 flex items-center justify-center">
                         <span class="material-symbols-outlined">call_to_action</span>
                     </div>
@@ -533,7 +588,7 @@ if (isset($settings['custom']['footer_bottom_links']['value'])) {
             
             <!-- Ana Sayfa Bölümleri -->
             <div class="border-b border-white/5">
-                <button onclick="toggleSection('homepage')" class="section-btn w-full p-4 flex items-center gap-4 hover:bg-white/5 transition-all" data-section="homepage">
+                <button onclick="window.toggleSection && window.toggleSection('homepage')" class="section-btn w-full p-4 flex items-center gap-4 hover:bg-white/5 transition-all" data-section="homepage">
                     <div class="section-icon w-10 h-10 rounded-xl bg-slate-700/50 flex items-center justify-center">
                         <span class="material-symbols-outlined">home</span>
                     </div>
@@ -694,133 +749,162 @@ if (isset($settings['custom']['footer_bottom_links']['value'])) {
                             </div>
                         </details>
                         
-                        <!-- Testimonials -->
+                        <!-- Pricing -->
                         <details class="glass rounded-xl overflow-hidden group">
                             <summary class="flex items-center justify-between p-4 cursor-pointer hover:bg-white/5 transition-colors">
                                 <div class="flex items-center gap-3">
-                                    <span class="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-sm">💬</span>
-                                    <span class="text-sm font-medium">Müşteri Yorumları</span>
+                                    <span class="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-sm">💰</span>
+                                    <span class="text-sm font-medium">Pricing</span>
                                 </div>
                                 <span class="material-symbols-outlined text-slate-400 group-open:rotate-180 transition-transform">expand_more</span>
                             </summary>
                             <div class="p-4 pt-0 space-y-4 border-t border-white/5">
                                 <div>
                                     <label class="block text-xs text-slate-400 mb-1.5">Başlık</label>
-                                    <input type="text" name="sections[testimonials][title]" value="<?php echo esc_attr($pageSections['testimonials']['title'] ?? 'Müşterilerimiz Ne Diyor?'); ?>" class="w-full px-4 py-2.5 input-field rounded-lg text-sm">
+                                    <input type="text" name="sections[pricing][title]" value="<?php echo esc_attr($pageSections['pricing']['title'] ?? 'Paketlerimiz'); ?>" class="w-full px-4 py-2.5 input-field rounded-lg text-sm">
                                 </div>
                                 <div>
                                     <label class="block text-xs text-slate-400 mb-1.5">Alt Başlık</label>
-                                    <input type="text" name="sections[testimonials][subtitle]" value="<?php echo esc_attr($pageSections['testimonials']['subtitle'] ?? 'Birlikte çalıştığımız müşterilerimizden geri bildirimler.'); ?>" class="w-full px-4 py-2.5 input-field rounded-lg text-sm">
+                                    <input type="text" name="sections[pricing][subtitle]" value="<?php echo esc_attr($pageSections['pricing']['subtitle'] ?? 'İhtiyacınıza uygun paketi seçin ve dijital dönüşümünüze başlayın.'); ?>" class="w-full px-4 py-2.5 input-field rounded-lg text-sm">
                                 </div>
                                 <div>
-                                    <label class="block text-xs text-slate-400 mb-1.5">Kolon Sayısı</label>
-                                    <?php 
-                                    $testimonialsColumns = isset($pageSections['testimonials']['columns']) ? (string)$pageSections['testimonials']['columns'] : '3';
-                                    ?>
-                                    <select name="sections[testimonials][columns]" class="w-full px-4 py-2.5 input-field rounded-lg text-sm">
-                                        <option value="2" <?php echo $testimonialsColumns === '2' ? 'selected' : ''; ?>>2 Kolon</option>
-                                        <option value="3" <?php echo $testimonialsColumns === '3' ? 'selected' : ''; ?>>3 Kolon</option>
-                                        <option value="4" <?php echo $testimonialsColumns === '4' ? 'selected' : ''; ?>>4 Kolon</option>
-                                    </select>
+                                    <label class="block text-xs text-slate-400 mb-1.5">Badge</label>
+                                    <input type="text" name="sections[pricing][settings][badge]" value="<?php echo esc_attr($pageSections['pricing']['settings']['badge'] ?? 'Fiyatlandırma'); ?>" class="w-full px-4 py-2.5 input-field rounded-lg text-sm">
                                 </div>
                                 <label class="flex items-center gap-3 cursor-pointer">
-                                    <input type="checkbox" name="sections[testimonials][enabled]" value="1" <?php echo ($pageSections['testimonials']['enabled'] ?? true) ? 'checked' : ''; ?> class="w-4 h-4 rounded bg-slate-700 border-slate-600 text-indigo-500">
+                                    <input type="checkbox" name="sections[pricing][enabled]" value="1" <?php echo ($pageSections['pricing']['enabled'] ?? true) ? 'checked' : ''; ?> class="w-4 h-4 rounded bg-slate-700 border-slate-600 text-indigo-500">
                                     <span class="text-xs text-slate-400">Bu bölümü göster</span>
                                 </label>
                                 
-                                <!-- Testimonials Items -->
+                                <!-- Pricing Packages -->
                                 <div class="border-t border-white/5 pt-4">
                                     <div class="flex items-center justify-between mb-3">
-                                        <label class="block text-xs font-medium text-slate-300">Müşteri Yorumları</label>
-                                        <button type="button" onclick="addTestimonialItem()" class="px-3 py-1.5 text-xs font-medium bg-indigo-500/20 text-indigo-400 rounded-lg hover:bg-indigo-500/30 transition-colors flex items-center gap-1">
+                                        <label class="block text-xs font-medium text-slate-300">Paketler</label>
+                                        <button type="button" onclick="addPricingPackage()" class="px-3 py-1.5 text-xs font-medium bg-indigo-500/20 text-indigo-400 rounded-lg hover:bg-indigo-500/30 transition-colors flex items-center gap-1">
                                             <span class="material-symbols-outlined text-sm">add</span>
-                                            Ekle
+                                            Paket Ekle
                                         </button>
                                     </div>
-                                    <div id="testimonials-items" class="space-y-3">
+                                    <div id="pricing-packages" class="space-y-3">
                                         <?php 
-                                        $testimonialsItems = $pageSections['testimonials']['items'] ?? [
+                                        $pricingPackages = $pageSections['pricing']['packages'] ?? [
                                             [
-                                                'name' => 'Ahmet Yılmaz',
-                                                'role' => 'CEO, TechCorp',
-                                                'content' => 'Harika bir deneyimdi. Profesyonel yaklaşımları ve kaliteli işleri ile beklentilerimizi aştılar.',
-                                                'rating' => 5,
-                                                'avatar' => ''
+                                                'name' => 'Başlangıç',
+                                                'price' => '₺2.500',
+                                                'period' => '/ay',
+                                                'description' => 'Küçük işletmeler ve kişisel projeler için ideal başlangıç paketi.',
+                                                'features' => ['5 Sayfa', 'Temel SEO', 'E-posta Desteği', 'SSL Sertifikası', 'Mobil Uyumlu Tasarım'],
+                                                'button_text' => 'Başla',
+                                                'button_link' => '/contact',
+                                                'popular' => false,
+                                                'gradient' => 'from-slate-500 to-slate-600'
                                             ],
                                             [
-                                                'name' => 'Elif Demir',
-                                                'role' => 'Marketing Manager',
-                                                'content' => 'Projemiz zamanında ve bütçe dahilinde tamamlandı. Kesinlikle tekrar çalışmak isteriz.',
-                                                'rating' => 5,
-                                                'avatar' => ''
+                                                'name' => 'Profesyonel',
+                                                'price' => '₺5.000',
+                                                'period' => '/ay',
+                                                'description' => 'Büyüyen işletmeler için gelişmiş özellikler ve destek.',
+                                                'features' => ['15 Sayfa', 'Gelişmiş SEO', 'Öncelikli Destek', 'SSL Sertifikası', 'Mobil Uyumlu Tasarım', 'Sosyal Medya Entegrasyonu', 'Analytics Entegrasyonu'],
+                                                'button_text' => 'Başla',
+                                                'button_link' => '/contact',
+                                                'popular' => true,
+                                                'gradient' => 'from-blue-500 to-purple-600'
                                             ],
                                             [
-                                                'name' => 'Mehmet Kara',
-                                                'role' => 'Founder, StartupX',
-                                                'content' => 'İletişimleri çok güçlü. Her adımda bilgilendirildik ve sonuç mükemmel oldu.',
-                                                'rating' => 5,
-                                                'avatar' => ''
+                                                'name' => 'Kurumsal',
+                                                'price' => '₺10.000',
+                                                'period' => '/ay',
+                                                'description' => 'Büyük işletmeler için özel çözümler ve özel destek.',
+                                                'features' => ['Sınırsız Sayfa', 'Premium SEO', '7/24 Öncelikli Destek', 'SSL Sertifikası', 'Mobil Uyumlu Tasarım', 'Sosyal Medya Entegrasyonu', 'Analytics Entegrasyonu', 'Özel Tasarım', 'API Entegrasyonları'],
+                                                'button_text' => 'Başla',
+                                                'button_link' => '/contact',
+                                                'popular' => false,
+                                                'gradient' => 'from-violet-500 to-purple-600'
+                                            ],
+                                            [
+                                                'name' => 'Özel Çözüm',
+                                                'price' => 'Özel Fiyat',
+                                                'period' => '',
+                                                'description' => 'Özel ihtiyaçlarınız için özelleştirilmiş çözümler.',
+                                                'features' => ['Tam Özelleştirme', 'Özel Geliştirme', 'Dedike Destek', 'Tüm Özellikler', 'Özel Entegrasyonlar', 'Danışmanlık Hizmeti', 'Öncelikli Güncellemeler'],
+                                                'button_text' => 'İletişime Geç',
+                                                'button_link' => '/contact',
+                                                'popular' => false,
+                                                'gradient' => 'from-amber-500 to-orange-600'
                                             ]
                                         ];
-                                        foreach ($testimonialsItems as $index => $item): 
+                                        foreach ($pricingPackages as $index => $package): 
+                                            $packageFeatures = is_array($package['features'] ?? []) ? $package['features'] : [];
                                         ?>
-                                        <div class="testimonial-item glass rounded-lg p-4 space-y-3">
+                                        <div class="pricing-package-item glass rounded-lg p-4 space-y-3">
                                             <div class="flex items-center justify-between">
-                                                <span class="text-xs font-medium text-slate-300">Yorum #<?php echo $index + 1; ?></span>
-                                                <button type="button" onclick="removeTestimonialItem(this)" class="p-1.5 text-red-400 hover:bg-red-500/10 rounded transition-colors">
+                                                <span class="text-xs font-medium text-slate-300">Paket #<?php echo $index + 1; ?></span>
+                                                <button type="button" onclick="removePricingPackage(this)" class="p-1.5 text-red-400 hover:bg-red-500/10 rounded transition-colors">
                                                     <span class="material-symbols-outlined text-sm">delete</span>
                                                 </button>
                                             </div>
-                                            <div>
-                                                <label class="block text-xs text-slate-400 mb-1.5">Müşteri Adı</label>
-                                                <input type="text" name="sections[testimonials][items][<?php echo $index; ?>][name]" value="<?php echo esc_attr($item['name'] ?? ''); ?>" placeholder="Ahmet Yılmaz" class="w-full px-4 py-2 input-field rounded-lg text-sm">
+                                            <div class="grid grid-cols-2 gap-3">
+                                                <div>
+                                                    <label class="block text-xs text-slate-400 mb-1.5">Paket Adı</label>
+                                                    <input type="text" name="sections[pricing][packages][<?php echo $index; ?>][name]" value="<?php echo esc_attr($package['name'] ?? ''); ?>" placeholder="Başlangıç" class="w-full px-4 py-2 input-field rounded-lg text-sm">
+                                                </div>
+                                                <div>
+                                                    <label class="block text-xs text-slate-400 mb-1.5">Fiyat</label>
+                                                    <input type="text" name="sections[pricing][packages][<?php echo $index; ?>][price]" value="<?php echo esc_attr($package['price'] ?? ''); ?>" placeholder="₺2.500" class="w-full px-4 py-2 input-field rounded-lg text-sm">
+                                                </div>
                                             </div>
-                                            <div>
-                                                <label class="block text-xs text-slate-400 mb-1.5">Ünvan/Pozisyon</label>
-                                                <input type="text" name="sections[testimonials][items][<?php echo $index; ?>][role]" value="<?php echo esc_attr($item['role'] ?? ''); ?>" placeholder="CEO, TechCorp" class="w-full px-4 py-2 input-field rounded-lg text-sm">
-                                            </div>
-                                            <div>
-                                                <label class="block text-xs text-slate-400 mb-1.5">Yorum İçeriği</label>
-                                                <textarea name="sections[testimonials][items][<?php echo $index; ?>][content]" rows="3" class="w-full px-4 py-2 input-field rounded-lg text-sm resize-none" placeholder="Müşteri yorumu..."><?php echo esc_html($item['content'] ?? ''); ?></textarea>
-                                            </div>
-                                            <div>
-                                                <label class="block text-xs text-slate-400 mb-1.5">Değerlendirme (Yıldız)</label>
-                                                <div class="flex items-center gap-2">
-                                                    <?php 
-                                                    $currentRating = isset($item['rating']) ? (int)$item['rating'] : 5;
-                                                    for ($star = 1; $star <= 5; $star++): 
-                                                    ?>
-                                                    <button type="button" onclick="setTestimonialRating(this, <?php echo $index; ?>, <?php echo $star; ?>)" class="testimonial-rating-btn p-1 transition-all <?php echo $star <= $currentRating ? 'text-yellow-400' : 'text-slate-500'; ?>" data-rating="<?php echo $star; ?>">
-                                                        <span class="material-symbols-outlined text-xl" style="font-variation-settings: 'FILL' <?php echo $star <= $currentRating ? 1 : 0; ?>;">star</span>
-                                                    </button>
-                                                    <?php endfor; ?>
-                                                    <input type="hidden" name="sections[testimonials][items][<?php echo $index; ?>][rating]" value="<?php echo $currentRating; ?>" class="testimonial-rating-input">
-                                                    <span class="text-xs text-slate-500 ml-2"><?php echo $currentRating; ?>/5</span>
+                                            <div class="grid grid-cols-2 gap-3">
+                                                <div>
+                                                    <label class="block text-xs text-slate-400 mb-1.5">Periyot</label>
+                                                    <input type="text" name="sections[pricing][packages][<?php echo $index; ?>][period]" value="<?php echo esc_attr($package['period'] ?? ''); ?>" placeholder="/ay, /yıl" class="w-full px-4 py-2 input-field rounded-lg text-sm">
+                                                </div>
+                                                <div>
+                                                    <label class="block text-xs text-slate-400 mb-1.5">Gradient</label>
+                                                    <select name="sections[pricing][packages][<?php echo $index; ?>][gradient]" class="w-full px-4 py-2 input-field rounded-lg text-sm">
+                                                        <option value="from-slate-500 to-slate-600" <?php echo ($package['gradient'] ?? '') === 'from-slate-500 to-slate-600' ? 'selected' : ''; ?>>Slate</option>
+                                                        <option value="from-blue-500 to-purple-600" <?php echo ($package['gradient'] ?? '') === 'from-blue-500 to-purple-600' ? 'selected' : ''; ?>>Blue-Purple</option>
+                                                        <option value="from-violet-500 to-purple-600" <?php echo ($package['gradient'] ?? '') === 'from-violet-500 to-purple-600' ? 'selected' : ''; ?>>Violet-Purple</option>
+                                                        <option value="from-emerald-500 to-teal-600" <?php echo ($package['gradient'] ?? '') === 'from-emerald-500 to-teal-600' ? 'selected' : ''; ?>>Emerald-Teal</option>
+                                                        <option value="from-amber-500 to-orange-600" <?php echo ($package['gradient'] ?? '') === 'from-amber-500 to-orange-600' ? 'selected' : ''; ?>>Amber-Orange</option>
+                                                        <option value="from-pink-500 to-rose-600" <?php echo ($package['gradient'] ?? '') === 'from-pink-500 to-rose-600' ? 'selected' : ''; ?>>Pink-Rose</option>
+                                                    </select>
                                                 </div>
                                             </div>
                                             <div>
-                                                <label class="block text-xs text-slate-400 mb-1.5">Avatar Fotoğrafı (Opsiyonel)</label>
-                                                <div class="flex items-center gap-4">
-                                                    <div class="testimonial-avatar-preview w-16 h-16 rounded-full bg-slate-800/50 border-2 border-dashed border-slate-600 flex items-center justify-center overflow-hidden hover:border-indigo-500/50 transition-colors cursor-pointer" onclick="selectTestimonialAvatar(<?php echo $index; ?>)" data-index="<?php echo $index; ?>">
-                                                        <?php if (!empty($item['avatar'])): ?>
-                                                        <img src="<?php echo esc_url($item['avatar']); ?>" class="w-full h-full object-cover">
-                                                        <?php else: ?>
-                                                        <span class="text-white font-semibold text-xl">
-                                                            <?php echo strtoupper(substr($item['name'] ?? 'A', 0, 1)); ?>
-                                                        </span>
-                                                        <?php endif; ?>
-                                                    </div>
-                                                    <div class="flex-1 space-y-2">
-                                                        <button type="button" onclick="selectTestimonialAvatar(<?php echo $index; ?>)" class="w-full px-4 py-2 text-xs font-medium bg-indigo-500/20 text-indigo-400 rounded-lg hover:bg-indigo-500/30 transition-colors">
-                                                            Fotoğraf Seç
-                                                        </button>
-                                                        <button type="button" onclick="removeTestimonialAvatar(<?php echo $index; ?>)" class="w-full px-4 py-2 text-xs font-medium text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors">
-                                                            Kaldır
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                                <input type="hidden" name="sections[testimonials][items][<?php echo $index; ?>][avatar]" value="<?php echo esc_attr($item['avatar'] ?? ''); ?>" class="testimonial-avatar-input" data-index="<?php echo $index; ?>">
+                                                <label class="block text-xs text-slate-400 mb-1.5">Açıklama</label>
+                                                <textarea name="sections[pricing][packages][<?php echo $index; ?>][description]" rows="2" class="w-full px-4 py-2 input-field rounded-lg text-sm resize-none" placeholder="Paket açıklaması..."><?php echo esc_html($package['description'] ?? ''); ?></textarea>
                                             </div>
+                                            <div>
+                                                <label class="block text-xs text-slate-400 mb-1.5">Özellikler</label>
+                                                <div id="pricing-features-<?php echo $index; ?>" class="space-y-2 mb-2">
+                                                    <?php foreach ($packageFeatures as $featureIndex => $feature): ?>
+                                                    <div class="flex items-center gap-2 pricing-feature-item">
+                                                        <input type="text" name="sections[pricing][packages][<?php echo $index; ?>][features][<?php echo $featureIndex; ?>]" value="<?php echo esc_attr($feature); ?>" placeholder="Özellik adı" class="flex-1 px-4 py-2 input-field rounded-lg text-sm">
+                                                        <button type="button" onclick="removePricingFeature(this)" class="p-2 text-red-400 hover:bg-red-500/10 rounded transition-colors">
+                                                            <span class="material-symbols-outlined text-sm">close</span>
+                                                        </button>
+                                                    </div>
+                                                    <?php endforeach; ?>
+                                                </div>
+                                                <button type="button" onclick="addPricingFeature(<?php echo $index; ?>)" class="w-full px-4 py-2 text-xs font-medium bg-slate-700/50 text-slate-300 rounded-lg hover:bg-slate-700 transition-colors flex items-center justify-center gap-1">
+                                                    <span class="material-symbols-outlined text-sm">add</span>
+                                                    Özellik Ekle
+                                                </button>
+                                            </div>
+                                            <div class="grid grid-cols-2 gap-3">
+                                                <div>
+                                                    <label class="block text-xs text-slate-400 mb-1.5">Buton Metni</label>
+                                                    <input type="text" name="sections[pricing][packages][<?php echo $index; ?>][button_text]" value="<?php echo esc_attr($package['button_text'] ?? 'Başla'); ?>" placeholder="Başla" class="w-full px-4 py-2 input-field rounded-lg text-sm">
+                                                </div>
+                                                <div>
+                                                    <label class="block text-xs text-slate-400 mb-1.5">Buton Linki</label>
+                                                    <input type="text" name="sections[pricing][packages][<?php echo $index; ?>][button_link]" value="<?php echo esc_attr($package['button_link'] ?? '/contact'); ?>" placeholder="/contact" class="w-full px-4 py-2 input-field rounded-lg text-sm">
+                                                </div>
+                                            </div>
+                                            <label class="flex items-center gap-3 cursor-pointer p-2 rounded-lg hover:bg-white/5 transition-colors">
+                                                <input type="checkbox" name="sections[pricing][packages][<?php echo $index; ?>][popular]" value="1" <?php echo (!empty($package['popular'])) ? 'checked' : ''; ?> class="w-4 h-4 rounded bg-slate-700 border-slate-600 text-indigo-500">
+                                                <span class="text-xs text-slate-400">Popüler Paket</span>
+                                            </label>
                                         </div>
                                         <?php endforeach; ?>
                                     </div>
@@ -828,34 +912,119 @@ if (isset($settings['custom']['footer_bottom_links']['value'])) {
                             </div>
                         </details>
                         
-                        <!-- CTA -->
+                        <!-- Glowing Features -->
                         <details class="glass rounded-xl overflow-hidden group">
                             <summary class="flex items-center justify-between p-4 cursor-pointer hover:bg-white/5 transition-colors">
                                 <div class="flex items-center gap-3">
-                                    <span class="w-8 h-8 rounded-lg bg-gradient-to-br from-rose-500 to-pink-600 flex items-center justify-center text-sm">📢</span>
-                                    <span class="text-sm font-medium">CTA</span>
+                                    <span class="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-sm">✨</span>
+                                    <span class="text-sm font-medium">Glowing Features</span>
                                 </div>
                                 <span class="material-symbols-outlined text-slate-400 group-open:rotate-180 transition-transform">expand_more</span>
                             </summary>
-                            <div class="p-4 pt-0 space-y-3 border-t border-white/5">
+                            <div class="p-4 pt-0 space-y-4 border-t border-white/5">
                                 <div>
                                     <label class="block text-xs text-slate-400 mb-1.5">Başlık</label>
-                                    <input type="text" name="sections[cta][title]" value="<?php echo esc_attr($pageSections['cta']['title'] ?? 'Hemen Başlayın'); ?>" class="w-full px-4 py-2.5 input-field rounded-lg text-sm">
+                                    <input type="text" name="sections[glowing-features][title]" value="<?php echo esc_attr($pageSections['glowing-features']['title'] ?? 'Özelliklerimiz'); ?>" class="w-full px-4 py-2.5 input-field rounded-lg text-sm">
                                 </div>
-                                <div class="grid grid-cols-2 gap-3">
-                                    <div>
-                                        <label class="block text-xs text-slate-400 mb-1.5">Buton</label>
-                                        <input type="text" name="sections[cta][button_text]" value="<?php echo esc_attr($pageSections['cta']['button_text'] ?? 'İletişim'); ?>" class="w-full px-4 py-2.5 input-field rounded-lg text-sm">
-                                    </div>
-                                    <div>
-                                        <label class="block text-xs text-slate-400 mb-1.5">Link</label>
-                                        <input type="text" name="sections[cta][button_link]" value="<?php echo esc_attr($pageSections['cta']['button_link'] ?? '/contact'); ?>" class="w-full px-4 py-2.5 input-field rounded-lg text-sm">
-                                    </div>
+                                <div>
+                                    <label class="block text-xs text-slate-400 mb-1.5">Alt Başlık</label>
+                                    <input type="text" name="sections[glowing-features][subtitle]" value="<?php echo esc_attr($pageSections['glowing-features']['subtitle'] ?? 'Yenilikçi çözümlerimizle işletmenizi dijital dünyada bir adım öne taşıyın.'); ?>" class="w-full px-4 py-2.5 input-field rounded-lg text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-slate-400 mb-1.5">Badge</label>
+                                    <input type="text" name="sections[glowing-features][settings][badge]" value="<?php echo esc_attr($pageSections['glowing-features']['settings']['badge'] ?? 'Neden Biz?'); ?>" class="w-full px-4 py-2.5 input-field rounded-lg text-sm">
                                 </div>
                                 <label class="flex items-center gap-3 cursor-pointer">
-                                    <input type="checkbox" name="sections[cta][enabled]" value="1" <?php echo ($pageSections['cta']['enabled'] ?? true) ? 'checked' : ''; ?> class="w-4 h-4 rounded bg-slate-700 border-slate-600 text-indigo-500">
+                                    <input type="checkbox" name="sections[glowing-features][enabled]" value="1" <?php echo ($pageSections['glowing-features']['enabled'] ?? true) ? 'checked' : ''; ?> class="w-4 h-4 rounded bg-slate-700 border-slate-600 text-indigo-500">
                                     <span class="text-xs text-slate-400">Bu bölümü göster</span>
                                 </label>
+                                
+                                <!-- Glowing Features Items -->
+                                <div class="border-t border-white/5 pt-4">
+                                    <div class="flex items-center justify-between mb-3">
+                                        <label class="block text-xs font-medium text-slate-300">Özellik Öğeleri</label>
+                                        <button type="button" onclick="addGlowingFeatureItem()" class="px-3 py-1.5 text-xs font-medium bg-indigo-500/20 text-indigo-400 rounded-lg hover:bg-indigo-500/30 transition-colors flex items-center gap-1">
+                                            <span class="material-symbols-outlined text-sm">add</span>
+                                            Ekle
+                                        </button>
+                                    </div>
+                                    <div id="glowing-features-items" class="space-y-3">
+                                        <?php 
+                                        $glowingFeaturesItems = $pageSections['glowing-features']['items'] ?? [
+                                            [
+                                                'icon' => 'rocket',
+                                                'title' => 'Hızlı Geliştirme',
+                                                'description' => 'Modern araçlar ve metodolojilerle projelerinizi hızla hayata geçiriyoruz. Agile yaklaşımımızla sürekli değer üretiyoruz.',
+                                                'gradient' => 'from-violet-500 to-purple-600'
+                                            ],
+                                            [
+                                                'icon' => 'shield',
+                                                'title' => 'Güvenli Altyapı',
+                                                'description' => 'En güncel güvenlik standartları ve best practice\'ler ile verilerinizi koruyoruz. SSL, şifreleme ve düzenli güvenlik taramaları.',
+                                                'gradient' => 'from-emerald-500 to-teal-600'
+                                            ],
+                                            [
+                                                'icon' => 'code',
+                                                'title' => 'Temiz Kod',
+                                                'description' => 'Okunabilir, sürdürülebilir ve ölçeklenebilir kod yazıyoruz. SOLID prensipleri ve modern mimari desenler kullanıyoruz.',
+                                                'gradient' => 'from-blue-500 to-cyan-600'
+                                            ],
+                                            [
+                                                'icon' => 'zap',
+                                                'title' => 'Yüksek Performans',
+                                                'description' => 'Optimize edilmiş kod, CDN entegrasyonu ve caching stratejileri ile maksimum hız sağlıyoruz.',
+                                                'gradient' => 'from-amber-500 to-orange-600'
+                                            ],
+                                            [
+                                                'icon' => 'users',
+                                                'title' => '7/24 Destek',
+                                                'description' => 'Uzman ekibimiz her zaman yanınızda. Teknik destek, danışmanlık ve eğitim hizmetleri sunuyoruz.',
+                                                'gradient' => 'from-pink-500 to-rose-600'
+                                            ]
+                                        ];
+                                        foreach ($glowingFeaturesItems as $index => $item): 
+                                        ?>
+                                        <div class="glowing-feature-item glass rounded-lg p-4 space-y-3">
+                                            <div class="flex items-center justify-between">
+                                                <span class="text-xs font-medium text-slate-300">Öğe #<?php echo $index + 1; ?></span>
+                                                <button type="button" onclick="removeGlowingFeatureItem(this)" class="p-1.5 text-red-400 hover:bg-red-500/10 rounded transition-colors">
+                                                    <span class="material-symbols-outlined text-sm">delete</span>
+                                                </button>
+                                            </div>
+                                            <div>
+                                                <label class="block text-xs text-slate-400 mb-1.5">İkon</label>
+                                                <div class="flex gap-2">
+                                                    <input type="text" name="sections[glowing-features][items][<?php echo $index; ?>][icon]" value="<?php echo esc_attr($item['icon'] ?? 'rocket'); ?>" placeholder="rocket" class="flex-1 px-4 py-2 input-field rounded-lg text-sm">
+                                                </div>
+                                                <div class="mt-2 text-xs text-slate-500">
+                                                    Mevcut ikonlar: rocket, shield, code, zap, users, box, settings, lock, sparkles, search, chart, globe
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <label class="block text-xs text-slate-400 mb-1.5">Başlık</label>
+                                                <input type="text" name="sections[glowing-features][items][<?php echo $index; ?>][title]" value="<?php echo esc_attr($item['title'] ?? ''); ?>" class="w-full px-4 py-2 input-field rounded-lg text-sm">
+                                            </div>
+                                            <div>
+                                                <label class="block text-xs text-slate-400 mb-1.5">Açıklama</label>
+                                                <textarea name="sections[glowing-features][items][<?php echo $index; ?>][description]" rows="2" class="w-full px-4 py-2 input-field rounded-lg text-sm resize-none"><?php echo esc_html($item['description'] ?? ''); ?></textarea>
+                                            </div>
+                                            <div>
+                                                <label class="block text-xs text-slate-400 mb-1.5">Gradient</label>
+                                                <select name="sections[glowing-features][items][<?php echo $index; ?>][gradient]" class="w-full px-4 py-2 input-field rounded-lg text-sm">
+                                                    <option value="from-violet-500 to-purple-600" <?php echo ($item['gradient'] ?? '') === 'from-violet-500 to-purple-600' ? 'selected' : ''; ?>>Violet-Purple</option>
+                                                    <option value="from-emerald-500 to-teal-600" <?php echo ($item['gradient'] ?? '') === 'from-emerald-500 to-teal-600' ? 'selected' : ''; ?>>Emerald-Teal</option>
+                                                    <option value="from-blue-500 to-cyan-600" <?php echo ($item['gradient'] ?? '') === 'from-blue-500 to-cyan-600' ? 'selected' : ''; ?>>Blue-Cyan</option>
+                                                    <option value="from-amber-500 to-orange-600" <?php echo ($item['gradient'] ?? '') === 'from-amber-500 to-orange-600' ? 'selected' : ''; ?>>Amber-Orange</option>
+                                                    <option value="from-pink-500 to-rose-600" <?php echo ($item['gradient'] ?? '') === 'from-pink-500 to-rose-600' ? 'selected' : ''; ?>>Pink-Rose</option>
+                                                    <option value="from-red-500 to-pink-600" <?php echo ($item['gradient'] ?? '') === 'from-red-500 to-pink-600' ? 'selected' : ''; ?>>Red-Pink</option>
+                                                    <option value="from-green-500 to-emerald-600" <?php echo ($item['gradient'] ?? '') === 'from-green-500 to-emerald-600' ? 'selected' : ''; ?>>Green-Emerald</option>
+                                                    <option value="from-indigo-500 to-blue-600" <?php echo ($item['gradient'] ?? '') === 'from-indigo-500 to-blue-600' ? 'selected' : ''; ?>>Indigo-Blue</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <?php endforeach; ?>
+                                    </div>
+                                </div>
                             </div>
                         </details>
                         
@@ -865,7 +1034,7 @@ if (isset($settings['custom']['footer_bottom_links']['value'])) {
             
             <!-- Özel CSS -->
             <div class="border-b border-white/5">
-                <button onclick="toggleSection('css')" class="section-btn w-full p-4 flex items-center gap-4 hover:bg-white/5 transition-all" data-section="css">
+                <button onclick="window.toggleSection && window.toggleSection('css')" class="section-btn w-full p-4 flex items-center gap-4 hover:bg-white/5 transition-all" data-section="css">
                     <div class="section-icon w-10 h-10 rounded-xl bg-slate-700/50 flex items-center justify-center">
                         <span class="material-symbols-outlined">code</span>
                     </div>
@@ -938,29 +1107,50 @@ if (isset($settings['custom']['footer_bottom_links']['value'])) {
     </div>
 </div>
 
-<script src="<?php echo site_url('admin/js/media-picker.js'); ?>"></script>
+<script src="<?php echo esc_url(site_url('admin/js/media-picker.js')); ?>" onerror="console.warn('Media picker script could not be loaded');"></script>
 <script>
-const themeSlug = '<?php echo esc_js($themeSlug); ?>';
-
-// Section Toggle
-function toggleSection(sectionId) {
-    const panel = document.getElementById(sectionId + '-panel');
-    const btn = document.querySelector(`[data-section="${sectionId}"]`);
-    const isOpen = panel.classList.contains('open');
-    
-    // Close all
-    document.querySelectorAll('.section-panel').forEach(p => p.classList.remove('open'));
-    document.querySelectorAll('.section-btn').forEach(b => {
-        b.classList.remove('active');
-        b.querySelector('.section-arrow').style.transform = 'rotate(0deg)';
-    });
-    
-    // Open clicked
-    if (!isOpen) {
-        panel.classList.add('open');
-        btn.classList.add('active');
-        btn.querySelector('.section-arrow').style.transform = 'rotate(180deg)';
+// Global error handler - Chrome extension errors
+window.addEventListener('error', function(e) {
+    // Chrome extension connection errors - ignore
+    if (e.message && e.message.includes('Could not establish connection')) {
+        e.preventDefault();
+        return false;
     }
+}, true);
+
+// Promise rejection handler
+window.addEventListener('unhandledrejection', function(e) {
+    // Chrome extension connection errors - ignore
+    if (e.reason && e.reason.message && e.reason.message.includes('Could not establish connection')) {
+        e.preventDefault();
+        return false;
+    }
+});
+
+const themeSlug = '<?php echo esc_js($themeSlug ?? 'codetic'); ?>';
+
+// Ensure toggleSection is available (should be defined in head)
+if (typeof window.toggleSection === 'undefined') {
+    console.error('toggleSection function was not loaded from head!');
+    // Fallback definition
+    window.toggleSection = function(sectionId) {
+        const panel = document.getElementById(sectionId + '-panel');
+        const btn = document.querySelector(`[data-section="${sectionId}"]`);
+        if (!panel || !btn) return;
+        const isOpen = panel.classList.contains('open');
+        document.querySelectorAll('.section-panel').forEach(p => p.classList.remove('open'));
+        document.querySelectorAll('.section-btn').forEach(b => {
+            b.classList.remove('active');
+            const arrow = b.querySelector('.section-arrow');
+            if (arrow) arrow.style.transform = 'rotate(0deg)';
+        });
+        if (!isOpen) {
+            panel.classList.add('open');
+            btn.classList.add('active');
+            const arrow = btn.querySelector('.section-arrow');
+            if (arrow) arrow.style.transform = 'rotate(180deg)';
+        }
+    };
 }
 
 // Device Preview
@@ -1088,6 +1278,16 @@ function collectSettings() {
             return;
         }
         
+        // Settings altındaki alanlar için özel işleme (örn: sections[glowing-features][settings][badge])
+        const settingsMatch = input.name.match(/sections\[([^\]]+)\]\[settings\]\[([^\]]+)\]/);
+        if (settingsMatch) {
+            const [, sectionId, settingKey] = settingsMatch;
+            if (!settings.sections[sectionId]) settings.sections[sectionId] = {};
+            if (!settings.sections[sectionId].settings) settings.sections[sectionId].settings = {};
+            settings.sections[sectionId].settings[settingKey] = input.value;
+            return;
+        }
+        
         // Normal section ayarları
         const m = input.name.match(/sections\[([^\]]+)\]\[([^\]]+)\]/);
         if (m) {
@@ -1170,12 +1370,20 @@ function saveSettings() {
     
     const settingsData = collectSettings();
     
-    fetch('<?php echo admin_url('themes/saveSettings'); ?>', {
+    fetch('<?php echo esc_js(admin_url('themes/saveSettings')); ?>', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ theme_slug: themeSlug, settings: settingsData })
     })
-    .then(r => r.json())
+    .then(async r => {
+        const contentType = r.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+            return r.json();
+        } else {
+            const text = await r.text();
+            throw new Error(text || 'Geçersiz yanıt formatı');
+        }
+    })
     .then(data => {
         if (data.success) {
             showToast('Başarılı!', 'Tema ayarları kaydedildi', 'success');
@@ -1185,7 +1393,8 @@ function saveSettings() {
         }
     })
     .catch(e => {
-        showToast('Hata!', 'Bağlantı sorunu', 'error');
+        console.error('Save settings error:', e);
+        showToast('Hata!', e.message || 'Bağlantı sorunu', 'error');
     })
     .finally(() => {
         btn.disabled = false;
@@ -1194,7 +1403,7 @@ function saveSettings() {
 }
 
 // Feature Item Management
-let featureItemIndex = <?php echo isset($pageSections['features']['items']) ? count($pageSections['features']['items']) : 3; ?>;
+let featureItemIndex = <?php echo isset($pageSections['features']['items']) && is_array($pageSections['features']['items']) ? (int)count($pageSections['features']['items']) : 3; ?>;
 
 function addFeatureItem() {
     const container = document.getElementById('features-items');
@@ -1487,6 +1696,233 @@ function removeTestimonialAvatar(index) {
     }
 }
 
+// Glowing Features Item Management
+let glowingFeatureItemIndex = <?php echo isset($pageSections['glowing-features']['items']) ? count($pageSections['glowing-features']['items']) : 5; ?>;
+
+function addGlowingFeatureItem() {
+    const container = document.getElementById('glowing-features-items');
+    const itemHtml = `
+        <div class="glowing-feature-item glass rounded-lg p-4 space-y-3">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-medium text-slate-300">Öğe #${glowingFeatureItemIndex + 1}</span>
+                <button type="button" onclick="removeGlowingFeatureItem(this)" class="p-1.5 text-red-400 hover:bg-red-500/10 rounded transition-colors">
+                    <span class="material-symbols-outlined text-sm">delete</span>
+                </button>
+            </div>
+            <div>
+                <label class="block text-xs text-slate-400 mb-1.5">İkon</label>
+                <div class="flex gap-2">
+                    <input type="text" name="sections[glowing-features][items][${glowingFeatureItemIndex}][icon]" value="rocket" placeholder="rocket" class="flex-1 px-4 py-2 input-field rounded-lg text-sm">
+                </div>
+                <div class="mt-2 text-xs text-slate-500">
+                    Mevcut ikonlar: rocket, shield, code, zap, users, box, settings, lock, sparkles, search, chart, globe
+                </div>
+            </div>
+            <div>
+                <label class="block text-xs text-slate-400 mb-1.5">Başlık</label>
+                <input type="text" name="sections[glowing-features][items][${glowingFeatureItemIndex}][title]" value="" class="w-full px-4 py-2 input-field rounded-lg text-sm">
+            </div>
+            <div>
+                <label class="block text-xs text-slate-400 mb-1.5">Açıklama</label>
+                <textarea name="sections[glowing-features][items][${glowingFeatureItemIndex}][description]" rows="2" class="w-full px-4 py-2 input-field rounded-lg text-sm resize-none"></textarea>
+            </div>
+            <div>
+                <label class="block text-xs text-slate-400 mb-1.5">Gradient</label>
+                <select name="sections[glowing-features][items][${glowingFeatureItemIndex}][gradient]" class="w-full px-4 py-2 input-field rounded-lg text-sm">
+                    <option value="from-violet-500 to-purple-600" selected>Violet-Purple</option>
+                    <option value="from-emerald-500 to-teal-600">Emerald-Teal</option>
+                    <option value="from-blue-500 to-cyan-600">Blue-Cyan</option>
+                    <option value="from-amber-500 to-orange-600">Amber-Orange</option>
+                    <option value="from-pink-500 to-rose-600">Pink-Rose</option>
+                    <option value="from-red-500 to-pink-600">Red-Pink</option>
+                    <option value="from-green-500 to-emerald-600">Green-Emerald</option>
+                    <option value="from-indigo-500 to-blue-600">Indigo-Blue</option>
+                </select>
+            </div>
+        </div>
+    `;
+    container.insertAdjacentHTML('beforeend', itemHtml);
+    glowingFeatureItemIndex++;
+}
+
+function removeGlowingFeatureItem(btn) {
+    if (confirm('Bu öğeyi silmek istediğinize emin misiniz?')) {
+        btn.closest('.glowing-feature-item').remove();
+        // Index'leri yeniden numaralandır
+        const items = document.querySelectorAll('#glowing-features-items .glowing-feature-item');
+        items.forEach((item, index) => {
+            const numberSpan = item.querySelector('.text-slate-300');
+            if (numberSpan) numberSpan.textContent = `Öğe #${index + 1}`;
+            
+            // Input name'lerini güncelle
+            item.querySelectorAll('input, textarea, select').forEach(input => {
+                const name = input.getAttribute('name');
+                if (name) {
+                    const newName = name.replace(/\[items\]\[\d+\]/, `[items][${index}]`);
+                    input.setAttribute('name', newName);
+                }
+            });
+        });
+    }
+}
+
+// Pricing Package Management
+let pricingPackageIndex = <?php echo isset($pageSections['pricing']['packages']) ? count($pageSections['pricing']['packages']) : 4; ?>;
+
+function addPricingPackage() {
+    const container = document.getElementById('pricing-packages');
+    const itemHtml = `
+        <div class="pricing-package-item glass rounded-lg p-4 space-y-3">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-medium text-slate-300">Paket #${pricingPackageIndex + 1}</span>
+                <button type="button" onclick="removePricingPackage(this)" class="p-1.5 text-red-400 hover:bg-red-500/10 rounded transition-colors">
+                    <span class="material-symbols-outlined text-sm">delete</span>
+                </button>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1.5">Paket Adı</label>
+                    <input type="text" name="sections[pricing][packages][${pricingPackageIndex}][name]" value="" placeholder="Başlangıç" class="w-full px-4 py-2 input-field rounded-lg text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1.5">Fiyat</label>
+                    <input type="text" name="sections[pricing][packages][${pricingPackageIndex}][price]" value="" placeholder="₺2.500" class="w-full px-4 py-2 input-field rounded-lg text-sm">
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1.5">Periyot</label>
+                    <input type="text" name="sections[pricing][packages][${pricingPackageIndex}][period]" value="" placeholder="/ay, /yıl" class="w-full px-4 py-2 input-field rounded-lg text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1.5">Gradient</label>
+                    <select name="sections[pricing][packages][${pricingPackageIndex}][gradient]" class="w-full px-4 py-2 input-field rounded-lg text-sm">
+                        <option value="from-slate-500 to-slate-600" selected>Slate</option>
+                        <option value="from-blue-500 to-purple-600">Blue-Purple</option>
+                        <option value="from-violet-500 to-purple-600">Violet-Purple</option>
+                        <option value="from-emerald-500 to-teal-600">Emerald-Teal</option>
+                        <option value="from-amber-500 to-orange-600">Amber-Orange</option>
+                        <option value="from-pink-500 to-rose-600">Pink-Rose</option>
+                    </select>
+                </div>
+            </div>
+            <div>
+                <label class="block text-xs text-slate-400 mb-1.5">Açıklama</label>
+                <textarea name="sections[pricing][packages][${pricingPackageIndex}][description]" rows="2" class="w-full px-4 py-2 input-field rounded-lg text-sm resize-none" placeholder="Paket açıklaması..."></textarea>
+            </div>
+            <div>
+                <label class="block text-xs text-slate-400 mb-1.5">Özellikler</label>
+                <div id="pricing-features-${pricingPackageIndex}" class="space-y-2 mb-2">
+                </div>
+                <button type="button" onclick="addPricingFeature(${pricingPackageIndex})" class="w-full px-4 py-2 text-xs font-medium bg-slate-700/50 text-slate-300 rounded-lg hover:bg-slate-700 transition-colors flex items-center justify-center gap-1">
+                    <span class="material-symbols-outlined text-sm">add</span>
+                    Özellik Ekle
+                </button>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1.5">Buton Metni</label>
+                    <input type="text" name="sections[pricing][packages][${pricingPackageIndex}][button_text]" value="Başla" placeholder="Başla" class="w-full px-4 py-2 input-field rounded-lg text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1.5">Buton Linki</label>
+                    <input type="text" name="sections[pricing][packages][${pricingPackageIndex}][button_link]" value="/contact" placeholder="/contact" class="w-full px-4 py-2 input-field rounded-lg text-sm">
+                </div>
+            </div>
+            <label class="flex items-center gap-3 cursor-pointer p-2 rounded-lg hover:bg-white/5 transition-colors">
+                <input type="checkbox" name="sections[pricing][packages][${pricingPackageIndex}][popular]" value="1" class="w-4 h-4 rounded bg-slate-700 border-slate-600 text-indigo-500">
+                <span class="text-xs text-slate-400">Popüler Paket</span>
+            </label>
+        </div>
+    `;
+    container.insertAdjacentHTML('beforeend', itemHtml);
+    pricingPackageIndex++;
+}
+
+function removePricingPackage(btn) {
+    if (confirm('Bu paketi silmek istediğinize emin misiniz?')) {
+        btn.closest('.pricing-package-item').remove();
+        // Index'leri yeniden numaralandır
+        const items = document.querySelectorAll('#pricing-packages .pricing-package-item');
+        items.forEach((item, index) => {
+            const numberSpan = item.querySelector('.text-slate-300');
+            if (numberSpan) numberSpan.textContent = `Paket #${index + 1}`;
+            
+            // Package index'ini bul
+            const packageIndex = index;
+            
+            // Input name'lerini güncelle
+            item.querySelectorAll('input, textarea, select').forEach(input => {
+                const name = input.getAttribute('name');
+                if (name) {
+                    const newName = name.replace(/\[packages\]\[\d+\]/, `[packages][${packageIndex}]`);
+                    input.setAttribute('name', newName);
+                }
+            });
+            
+            // Features container ID'sini güncelle
+            const featuresContainer = item.querySelector('[id^="pricing-features-"]');
+            if (featuresContainer) {
+                featuresContainer.id = `pricing-features-${packageIndex}`;
+                // Features container içindeki buton onclick'ini güncelle
+                const addFeatureBtn = featuresContainer.nextElementSibling;
+                if (addFeatureBtn && addFeatureBtn.onclick) {
+                    addFeatureBtn.setAttribute('onclick', `addPricingFeature(${packageIndex})`);
+                }
+            }
+            
+            // Feature input'larını güncelle
+            item.querySelectorAll('.pricing-feature-item input').forEach((featureInput, featureIndex) => {
+                const name = featureInput.getAttribute('name');
+                if (name) {
+                    const newName = name.replace(/\[packages\]\[\d+\]\[features\]\[\d+\]/, `[packages][${packageIndex}][features][${featureIndex}]`);
+                    featureInput.setAttribute('name', newName);
+                }
+            });
+        });
+    }
+}
+
+function addPricingFeature(packageIndex) {
+    const container = document.getElementById(`pricing-features-${packageIndex}`);
+    if (!container) return;
+    
+    const featureIndex = container.querySelectorAll('.pricing-feature-item').length;
+    const itemHtml = `
+        <div class="flex items-center gap-2 pricing-feature-item">
+            <input type="text" name="sections[pricing][packages][${packageIndex}][features][${featureIndex}]" value="" placeholder="Özellik adı" class="flex-1 px-4 py-2 input-field rounded-lg text-sm">
+            <button type="button" onclick="removePricingFeature(this)" class="p-2 text-red-400 hover:bg-red-500/10 rounded transition-colors">
+                <span class="material-symbols-outlined text-sm">close</span>
+            </button>
+        </div>
+    `;
+    container.insertAdjacentHTML('beforeend', itemHtml);
+}
+
+function removePricingFeature(btn) {
+    btn.closest('.pricing-feature-item').remove();
+    // Feature index'lerini yeniden numaralandır
+    const packageItem = btn.closest('.pricing-package-item');
+    const featuresContainer = packageItem.querySelector('[id^="pricing-features-"]');
+    if (featuresContainer) {
+        const packageIndexMatch = featuresContainer.id.match(/pricing-features-(\d+)/);
+        if (packageIndexMatch) {
+            const packageIndex = packageIndexMatch[1];
+            const featureItems = featuresContainer.querySelectorAll('.pricing-feature-item');
+            featureItems.forEach((item, index) => {
+                const input = item.querySelector('input');
+                if (input) {
+                    const name = input.getAttribute('name');
+                    if (name) {
+                        const newName = name.replace(/\[features\]\[\d+\]/, `[features][${index}]`);
+                        input.setAttribute('name', newName);
+                    }
+                }
+            });
+        }
+    }
+}
+
 // Name input değiştiğinde avatar initial'ini güncelle
 document.addEventListener('DOMContentLoaded', () => {
     // Testimonial name input değişikliklerini dinle
@@ -1740,6 +2176,41 @@ document.addEventListener('DOMContentLoaded', () => {
 // Icon input değiştiğinde preview'ı güncelle
 document.addEventListener('DOMContentLoaded', () => {
     setDevice('desktop');
+    
+    // Section toggle butonlarına event listener ekle
+    document.querySelectorAll('.section-btn[data-section]').forEach(btn => {
+        const sectionId = btn.getAttribute('data-section');
+        if (sectionId) {
+            // Remove existing onclick
+            btn.removeAttribute('onclick');
+            // Add event listener
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                if (window.toggleSection) {
+                    window.toggleSection(sectionId);
+                } else {
+                    console.error('toggleSection function not found!');
+                }
+            });
+        }
+    });
+    
+    // İlk açılışta aktif paneli kontrol et
+    const activePanel = document.querySelector('.section-panel.open');
+    if (!activePanel) {
+        // Eğer hiç açık panel yoksa, branding panelini aç
+        const brandingPanel = document.getElementById('branding-panel');
+        const brandingBtn = document.querySelector('[data-section="branding"]');
+        if (brandingPanel && brandingBtn) {
+            brandingPanel.classList.add('open');
+            brandingBtn.classList.add('active');
+            const arrow = brandingBtn.querySelector('.section-arrow');
+            if (arrow) {
+                arrow.style.transform = 'rotate(180deg)';
+            }
+        }
+    }
     
     // Icon input değişikliklerini dinle
     document.addEventListener('input', (e) => {

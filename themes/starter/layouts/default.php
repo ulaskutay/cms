@@ -2,8 +2,13 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <?php 
+    // ViewRenderer sınıfının yüklü olduğundan emin ol
+    if (!class_exists('ViewRenderer')) {
+        require_once __DIR__ . '/../../../core/ViewRenderer.php';
+    }
+    
     // SEO Ayarları
     $seoTitle = get_option('seo_title', '');
     $seoDescription = get_option('seo_description', '');
@@ -314,7 +319,7 @@
     </script>
     
     <!-- Privacy-Friendly Analytics -->
-    <script src="/public/frontend/js/analytics.js" defer></script>
+    <script src="<?php echo ViewRenderer::assetUrl('frontend/js/analytics.js'); ?>" defer></script>
     
     <script>
         // Back to top functionality

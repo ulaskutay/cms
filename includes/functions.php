@@ -242,7 +242,17 @@ function esc_js($text) {
 }
 
 /**
- * Site URL'ini döndürür
+ * Textarea için string temizler
+ */
+if (!function_exists('esc_textarea')) {
+    function esc_textarea($text) {
+        return esc_html($text);
+    }
+}
+
+/**
+ * Site URL'ini döndürür (dil prefix'i olmadan)
+ * Asset URL'leri, admin URL'leri vb. için kullanılır
  */
 function site_url($path = '') {
     $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
@@ -261,6 +271,121 @@ function site_url($path = '') {
     $cleanPath = $path ? '/' . ltrim($path, '/') : '';
     
     return $protocol . '://' . $host . $basePath . $cleanPath;
+}
+
+/**
+ * Dil prefix'li URL döndürür
+ * Frontend linkleri için kullanılır (menü, butonlar vb.)
+ * 
+ * @param string $path URL path'i (örn: '/contact', '/blog')
+ * @param string|null $lang Hedef dil kodu (null ise mevcut dil kullanılır)
+ * @return string Dil prefix'li URL
+ */
+function localized_url($path = '', $lang = null) {
+    // Base URL'i al (dil prefix'i olmadan)
+    $baseUrl = site_url();
+    
+    // Mevcut dili al
+    $currentLang = $lang;
+    if ($currentLang === null) {
+        $currentLang = get_current_language();
+    }
+    
+    // Varsayılan dili al
+    $defaultLang = get_default_language();
+    
+    // Path'i temizle
+    $cleanPath = $path ? '/' . ltrim($path, '/') : '';
+    
+    // Varsayılan dil ise prefix ekleme
+    if ($currentLang === $defaultLang || empty($currentLang)) {
+        return $baseUrl . $cleanPath;
+    }
+    
+    // Dil prefix'i ekle
+    return $baseUrl . '/' . $currentLang . $cleanPath;
+}
+
+/**
+ * Mevcut dili döndürür
+ */
+function get_current_language() {
+    // Session'dan kontrol et
+    if (isset($_SESSION['current_language'])) {
+        return $_SESSION['current_language'];
+    }
+    
+    // URL'den kontrol et
+    $uri = $_SERVER['REQUEST_URI'] ?? '';
+    $path = parse_url($uri, PHP_URL_PATH);
+    $segments = explode('/', trim($path, '/'));
+    
+    if (!empty($segments[0]) && strlen($segments[0]) === 2) {
+        // 2 karakterli segment dil kodu olabilir
+        $potentialLang = strtolower($segments[0]);
+        
+        // Aktif diller listesini kontrol et
+        $db = get_db();
+        try {
+            $lang = $db->fetch(
+                "SELECT code FROM languages WHERE code = ? AND is_active = 1",
+                [$potentialLang]
+            );
+            if ($lang) {
+                $_SESSION['current_language'] = $potentialLang;
+                return $potentialLang;
+            }
+        } catch (Exception $e) {
+            // Veritabanı hatası, varsayılan dil döndür
+        }
+    }
+    
+    return get_default_language();
+}
+
+/**
+ * Varsayılan dili döndürür
+ */
+function get_default_language() {
+    // Module settings'den al
+    $settings = get_option('module_translation_settings');
+    if ($settings && is_array($settings) && isset($settings['default_language'])) {
+        return $settings['default_language'];
+    }
+    
+    // Varsayılan olarak Türkçe
+    return 'tr';
+}
+
+/**
+ * Menü URL'ini dil prefix'i ile döndürür
+ * Menü linkleri için kullanılır
+ * 
+ * @param string $url Orijinal URL
+ * @return string Dil prefix'li URL
+ */
+function get_localized_menu_url($url) {
+    // Boş URL veya # ise olduğu gibi döndür
+    if (empty($url) || $url === '#') {
+        return $url;
+    }
+    
+    // Harici linkler (http/https ile başlayan) olduğu gibi döndür
+    if (strpos($url, 'http://') === 0 || strpos($url, 'https://') === 0) {
+        return $url;
+    }
+    
+    // Admin linkleri olduğu gibi döndür
+    if (strpos($url, '/admin') === 0) {
+        return site_url($url);
+    }
+    
+    // localized_url fonksiyonu varsa kullan
+    if (function_exists('localized_url')) {
+        return localized_url($url);
+    }
+    
+    return $url;
 }
 
 /**
@@ -1473,16 +1598,398 @@ function get_site_favicon() {
         $favicon = get_option('site_favicon', '');
     }
     
-    // Ayarlarda da yoksa varsayılan favicon'u kullan
-    if (empty($favicon)) {
-        $defaultFavicon = site_url('uploads/Logo/codetic-favicon.png');
-        // Dosya var mı kontrol et
-        $faviconPath = __DIR__ . '/../public/uploads/Logo/codetic-favicon.png';
-        if (file_exists($faviconPath)) {
-            return $defaultFavicon;
+    // Favicon URL'ini normalize et
+    if (!empty($favicon)) {
+        // Eğer zaten tam URL ise (http/https ile başlıyorsa), olduğu gibi döndür
+        if (preg_match('/^https?:\/\//', $favicon)) {
+            return $favicon;
         }
+        
+        // Göreli yol ise, tam URL'e dönüştür
+        // Eğer / ile başlıyorsa
+        if (strpos($favicon, '/') === 0) {
+            // /public/ ile başlamıyorsa ekle
+            if (strpos($favicon, '/public/') !== 0 && strpos($favicon, '/public') !== 0) {
+                $favicon = '/public' . $favicon;
+            }
+        } else {
+            // / ile başlamıyorsa, public/uploads/ ekle (muhtemelen sadece dosya adı veya göreli yol)
+            $favicon = 'public/uploads/' . ltrim($favicon, '/');
+        }
+        
+        // Tam URL'e dönüştür (site_url zaten / ekliyor)
+        return site_url($favicon);
     }
     
-    return $favicon;
+    // Ayarlarda da yoksa varsayılan favicon'u kullan
+    $defaultFavicon = site_url('public/uploads/Logo/codetic-favicon.png');
+    // Dosya var mı kontrol et
+    $faviconPath = __DIR__ . '/../public/uploads/Logo/codetic-favicon.png';
+    if (file_exists($faviconPath)) {
+        return $defaultFavicon;
+    }
+    
+    return '';
 }
 
+// ==================== TRANSLATION HELPER FUNCTIONS ====================
+
+/**
+ * Çeviri metnini döndürür (WordPress __() benzeri)
+ * @param string $text Çevrilecek metin
+ * @param string $domain Text domain (varsayılan: 'default')
+ * @return string Çevrilmiş metin
+ */
+if (!function_exists('__')) {
+    function __($text, $domain = 'default') {
+        if (empty($text)) {
+            return $text;
+        }
+        
+        // Translation modülü aktif mi kontrol et
+        if (!class_exists('ModuleLoader')) {
+            return $text;
+        }
+        
+        $moduleLoader = ModuleLoader::getInstance();
+        if (!$moduleLoader) {
+            return $text;
+        }
+        
+        $translationController = $moduleLoader->getModuleController('translation');
+        if (!$translationController || !method_exists($translationController, 'translate')) {
+            // Fallback: apply_filters kullan (geriye dönük uyumluluk)
+            if (function_exists('apply_filters')) {
+                return apply_filters('page_title', $text);
+            }
+            return $text;
+        }
+        
+        return $translationController->translate($text, $domain);
+    }
+}
+
+/**
+ * Çeviri metnini echo eder (WordPress _e() benzeri)
+ * @param string $text Çevrilecek metin
+ * @param string $domain Text domain (varsayılan: 'default')
+ */
+if (!function_exists('_e')) {
+    function _e($text, $domain = 'default') {
+        echo __($text, $domain);
+    }
+}
+
+/**
+ * __() için kısa alias
+ * @param string $text Çevrilecek metin
+ * @param string $domain Text domain (varsayılan: 'default')
+ * @return string Çevrilmiş metin
+ */
+if (!function_exists('t')) {
+    function t($text, $domain = 'default') {
+        return __($text, $domain);
+    }
+}
+
+/**
+ * HTML escape ile çeviri döndürür (WordPress esc_html__() benzeri)
+ * @param string $text Çevrilecek metin
+ * @param string $domain Text domain (varsayılan: 'default')
+ * @return string HTML escape edilmiş çevrilmiş metin
+ */
+if (!function_exists('esc_html__')) {
+    function esc_html__($text, $domain = 'default') {
+        return esc_html(__($text, $domain));
+    }
+}
+
+/**
+ * Attribute escape ile çeviri döndürür (WordPress esc_attr__() benzeri)
+ * @param string $text Çevrilecek metin
+ * @param string $domain Text domain (varsayılan: 'default')
+ * @return string Attribute escape edilmiş çevrilmiş metin
+ */
+if (!function_exists('esc_attr__')) {
+    function esc_attr__($text, $domain = 'default') {
+        return esc_attr(__($text, $domain));
+    }
+}
+
+/**
+ * HTML escape ile çeviri echo eder (WordPress esc_html_e() benzeri)
+ * @param string $text Çevrilecek metin
+ * @param string $domain Text domain (varsayılan: 'default')
+ */
+if (!function_exists('esc_html_e')) {
+    function esc_html_e($text, $domain = 'default') {
+        echo esc_html__($text, $domain);
+    }
+}
+
+/**
+ * Attribute escape ile çeviri echo eder (WordPress esc_attr_e() benzeri)
+ * @param string $text Çevrilecek metin
+ * @param string $domain Text domain (varsayılan: 'default')
+ */
+if (!function_exists('esc_attr_e')) {
+    function esc_attr_e($text, $domain = 'default') {
+        echo esc_attr__($text, $domain);
+    }
+}
+
+// ==================== THEME RENDERING FUNCTIONS ====================
+
+/**
+ * Renders the theme header (WordPress-style compatibility)
+ * Includes: HTML doctype, head section, body opening, and header
+ * @param array $data Additional data to pass to header
+ */
+if (!function_exists('get_header')) {
+    function get_header($data = []) {
+        // Ensure ThemeLoader class is loaded
+        if (!class_exists('ThemeLoader')) {
+            $themeLoaderFile = __DIR__ . '/../core/ThemeLoader.php';
+            if (file_exists($themeLoaderFile)) {
+                require_once $themeLoaderFile;
+            }
+        }
+        
+        // Get current language
+        $currentLang = function_exists('get_current_language') ? get_current_language() : 'tr';
+        
+        // SEO data
+        $seoTitle = get_option('seo_title', '');
+        $seoDescription = get_option('seo_description', '');
+        $seoAuthor = get_option('seo_author', '');
+        
+        // Page title
+        $pageTitle = $data['title'] ?? ($seoTitle ?: __('Ana Sayfa'));
+        
+        // Meta description
+        $metaDesc = $data['meta_description'] ?? $seoDescription;
+        
+        // Favicon
+        $favicon = '';
+        $themeLoader = null;
+        $cssVars = '';
+        $themeCss = '';
+        $primaryColor = '#3b82f6';
+        $secondaryColor = '#1e293b';
+        
+        // Try to get ThemeLoader
+        if (class_exists('ThemeLoader')) {
+            try {
+                $themeLoader = ThemeLoader::getInstance();
+                if ($themeLoader && $themeLoader->hasActiveTheme()) {
+                    $favicon = $themeLoader->getFavicon();
+                    $cssVars = $themeLoader->getCssVariablesTag();
+                    $themeCss = $themeLoader->getCssUrl();
+                    $primaryColor = $themeLoader->getPrimaryColor() ?: $primaryColor;
+                    $secondaryColor = $themeLoader->getSecondaryColor() ?: $secondaryColor;
+                }
+            } catch (Exception $e) {
+                error_log('ThemeLoader error in get_header: ' . $e->getMessage());
+            }
+        }
+        
+        // Fallback favicon
+        if (empty($favicon)) {
+            $favicon = get_site_favicon();
+        }
+        
+        // Google Analytics and other tracking codes
+        $googleAnalytics = get_option('google_analytics', '');
+        $googleTagManager = get_option('google_tag_manager', '');
+        $googleAds = get_option('google_ads', '');
+        
+        // Output HTML structure
+        ?>
+<!DOCTYPE html>
+<html lang="<?php echo esc_attr($currentLang); ?>">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><?php echo esc_html($pageTitle); ?></title>
+    
+    <?php if (!empty($metaDesc)): ?>
+    <meta name="description" content="<?php echo esc_attr($metaDesc); ?>">
+    <?php endif; ?>
+    
+    <?php if (!empty($seoAuthor)): ?>
+    <meta name="author" content="<?php echo esc_attr($seoAuthor); ?>">
+    <?php endif; ?>
+    
+    <!-- Favicon -->
+    <?php if (!empty($favicon)): ?>
+    <link rel="icon" type="image/png" href="<?php echo esc_url($favicon); ?>">
+    <link rel="shortcut icon" href="<?php echo esc_url($favicon); ?>">
+    <link rel="apple-touch-icon" href="<?php echo esc_url($favicon); ?>">
+    <?php endif; ?>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Theme CSS Variables -->
+    <?php if (!empty($cssVars)): ?>
+    <?php echo $cssVars; ?>
+    <?php endif; ?>
+    
+    <style>
+        :root {
+            --color-primary: <?php echo esc_attr($primaryColor); ?>;
+            --color-secondary: <?php echo esc_attr($secondaryColor); ?>;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+    </style>
+    
+    <!-- Theme CSS -->
+    <?php if (!empty($themeCss)): ?>
+    <link rel="stylesheet" href="<?php echo esc_url($themeCss); ?>">
+    <?php endif; ?>
+    
+    <?php
+    // Google Tag Manager - Head
+    if (!empty($googleTagManager)): ?>
+    <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','<?php echo esc_js($googleTagManager); ?>');</script>
+    <!-- End Google Tag Manager -->
+    <?php endif; ?>
+    
+    <?php
+    // Google Analytics
+    if (!empty($googleAnalytics)): ?>
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=<?php echo esc_js($googleAnalytics); ?>"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', '<?php echo esc_js($googleAnalytics); ?>');
+    </script>
+    <?php endif; ?>
+</head>
+<body>
+    <?php 
+    // Google Tag Manager - Body
+    if (!empty($googleTagManager)): ?>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=<?php echo esc_attr($googleTagManager); ?>"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <?php endif; ?>
+    
+    <?php
+            // Now render the header snippet
+            if ($themeLoader) {
+                try {
+                    echo $themeLoader->renderSnippet('header', $data);
+                } catch (Exception $e) {
+                    error_log('Header snippet render error: ' . $e->getMessage());
+                    // Fallback: Try to include header directly
+                    $rootPath = dirname(__DIR__);
+                    $headerPath = $rootPath . '/themes/realestate/snippets/header.php';
+                    if (file_exists($headerPath)) {
+                        extract($data);
+                        if (isset($themeLoader)) {
+                            $GLOBALS['themeLoader'] = $themeLoader;
+                        }
+                        include $headerPath;
+                    }
+                }
+            } else {
+                // Fallback: Try to include header directly if ThemeLoader not available
+                $rootPath = dirname(__DIR__);
+                $headerPath = $rootPath . '/themes/realestate/snippets/header.php';
+                if (file_exists($headerPath)) {
+                    extract($data);
+                    include $headerPath;
+                }
+            }
+            ?>
+    
+    <!-- Main Content -->
+    <main id="main">
+    <?php
+    }
+}
+
+/**
+ * Renders the theme footer (WordPress-style compatibility)
+ * Includes: footer section, body closing, and html closing
+ * @param array $data Additional data to pass to footer
+ */
+if (!function_exists('get_footer')) {
+    function get_footer($data = []) {
+        // Ensure ThemeLoader class is loaded
+        if (!class_exists('ThemeLoader')) {
+            $themeLoaderFile = __DIR__ . '/../core/ThemeLoader.php';
+            if (file_exists($themeLoaderFile)) {
+                require_once $themeLoaderFile;
+            }
+        }
+        
+        $themeLoader = null;
+        $themeJs = '';
+        
+        // Try to get ThemeLoader
+        if (class_exists('ThemeLoader')) {
+            try {
+                $themeLoader = ThemeLoader::getInstance();
+                if ($themeLoader && $themeLoader->hasActiveTheme()) {
+                    $themeJs = $themeLoader->getJsUrl();
+                }
+            } catch (Exception $e) {
+                error_log('ThemeLoader error in get_footer: ' . $e->getMessage());
+            }
+        }
+        
+        ?>
+    </main>
+    <!-- End Main Content -->
+    
+    <?php
+            // Render footer snippet
+            if ($themeLoader) {
+                try {
+                    echo $themeLoader->renderSnippet('footer', $data);
+                } catch (Exception $e) {
+                    error_log('Footer snippet render error: ' . $e->getMessage());
+                    // Fallback: Try to include footer directly
+                    $rootPath = dirname(__DIR__);
+                    $footerPath = $rootPath . '/themes/realestate/snippets/footer.php';
+                    if (file_exists($footerPath)) {
+                        extract($data);
+                        if (isset($themeLoader)) {
+                            $GLOBALS['themeLoader'] = $themeLoader;
+                        }
+                        include $footerPath;
+                    }
+                }
+            } else {
+                // Fallback: Try to include footer directly if ThemeLoader not available
+                $rootPath = dirname(__DIR__);
+                $footerPath = $rootPath . '/themes/realestate/snippets/footer.php';
+                if (file_exists($footerPath)) {
+                    extract($data);
+                    include $footerPath;
+                }
+            }
+            
+            // Theme JavaScript
+            if (!empty($themeJs)): ?>
+    
+    <!-- Theme JS -->
+    <script src="<?php echo esc_url($themeJs); ?>"></script>
+    <?php endif; ?>
+    
+</body>
+</html>
+        <?php
+    }
+}

@@ -494,6 +494,282 @@
     }
 }
 
+/* ==================== HERO FORM STYLES ==================== */
+
+/* Hero Form Takip Eden Gözler */
+.hero-form-eyes {
+    position: absolute;
+    top: -60px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 40px;
+    z-index: 10;
+    pointer-events: none;
+}
+
+.eye-container {
+    width: 50px;
+    height: 50px;
+    position: relative;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
+
+.eye {
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.pupil {
+    width: 20px;
+    height: 20px;
+    background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+    border-radius: 50%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    transition: transform 0.1s ease-out;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.5);
+}
+
+.pupil::after {
+    content: '';
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 50%;
+    top: 4px;
+    left: 4px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Gözler için blink animasyonu */
+@keyframes blink {
+    0%, 90%, 100% {
+        height: 100%;
+    }
+    95% {
+        height: 2px;
+    }
+}
+
+.eye-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    animation: blink 3s infinite;
+    pointer-events: none;
+}
+
+/* Responsive gözler */
+@media (max-width: 768px) {
+    .hero-form-eyes {
+        top: -50px;
+        gap: 30px;
+    }
+    
+    .eye-container {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .pupil {
+        width: 16px;
+        height: 16px;
+    }
+    
+    .pupil::after {
+        width: 5px;
+        height: 5px;
+        top: 3px;
+        left: 3px;
+    }
+}
+
+/* Hero Quote Form - Penta Yazılım tarzı */
+.hero-quote-form {
+    background: rgba(255, 255, 255, 0.05) !important;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.hero-quote-form .cms-form-wrapper {
+    max-width: 100%;
+    margin: 0;
+}
+
+.hero-quote-form .cms-form {
+    background: transparent;
+}
+
+.hero-quote-form .form-description {
+    color: rgba(255, 255, 255, 0.8);
+    text-align: center;
+    margin-bottom: 2rem;
+    font-size: 1rem;
+}
+
+.hero-quote-form .form-field {
+    margin-bottom: 1.5rem;
+}
+
+.hero-quote-form .field-label {
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 500;
+    font-size: 0.875rem;
+    margin-bottom: 0.625rem;
+}
+
+.hero-quote-form .field-input input[type="text"],
+.hero-quote-form .field-input input[type="email"],
+.hero-quote-form .field-input input[type="tel"],
+.hero-quote-form .field-input input[type="number"],
+.hero-quote-form .field-input textarea,
+.hero-quote-form .field-input select {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    padding: 0.875rem 1.25rem;
+    border-radius: 0.75rem;
+    transition: all 0.3s ease;
+}
+
+.hero-quote-form .field-input input::placeholder,
+.hero-quote-form .field-input textarea::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.hero-quote-form .field-input input:focus,
+.hero-quote-form .field-input textarea:focus,
+.hero-quote-form .field-input select:focus {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(59, 130, 246, 0.6);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+    outline: none;
+}
+
+.hero-quote-form .field-help {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.75rem;
+    margin-top: 0.5rem;
+}
+
+.hero-quote-form .checkbox-label,
+.hero-quote-form .radio-label {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.hero-quote-form .form-submit {
+    margin-top: 2rem;
+}
+
+.hero-quote-form .submit-button {
+    width: 100%;
+    background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+    border: none;
+    padding: 1rem 2rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: white;
+    border-radius: 0.75rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+}
+
+.hero-quote-form .submit-button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5);
+}
+
+.hero-quote-form .submit-button:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.hero-quote-form .form-field.field-error .field-input input,
+.hero-quote-form .form-field.field-error .field-input textarea,
+.hero-quote-form .form-field.field-error .field-input select {
+    border-color: #ef4444;
+    background: rgba(239, 68, 68, 0.1);
+}
+
+.hero-quote-form .field-error-message {
+    color: #fca5a5;
+    font-size: 0.75rem;
+    margin-top: 0.5rem;
+}
+
+.hero-quote-form .form-success {
+    background: rgba(34, 197, 94, 0.1);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    border-radius: 0.75rem;
+    padding: 2rem;
+    text-align: center;
+}
+
+.hero-quote-form .form-success .success-icon {
+    background: #22c55e;
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 1rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.hero-quote-form .form-success .success-message {
+    color: #86efac;
+    font-size: 1.125rem;
+    font-weight: 500;
+}
+
+.hero-quote-form .form-error-message {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 0.75rem;
+    padding: 1rem;
+    margin-top: 1rem;
+}
+
+.hero-quote-form .form-error-message p {
+    color: #fca5a5;
+    margin: 0;
+}
+
+/* Responsive Hero Form */
+@media (max-width: 768px) {
+    .hero-quote-form {
+        padding: 1.5rem !important;
+    }
+    
+    .hero-quote-form .form-field {
+        margin-bottom: 1.25rem;
+    }
+    
+    .hero-quote-form .submit-button {
+        padding: 0.875rem 1.5rem;
+    }
+}
+
 /* ==================== RESPONSIVE ==================== */
 
 @media (max-width: 480px) {

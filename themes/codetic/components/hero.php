@@ -30,26 +30,35 @@ $GLOBALS['codetic_hero_rendered'] = true; // Render başladı, flag'i set et
 $section = $section ?? [];
 $settings = $section['settings'] ?? [];
 
-// Hero ayarları
-$heroTitlePrefix = $themeLoader->getSetting('title_prefix', 'This is something', 'hero');
-$animatedWords = $themeLoader->getSetting('animated_words', 'amazing,new,wonderful,beautiful,smart', 'hero');
+// Hero ayarları - Önce $section array'inden al, yoksa $themeLoader->getSetting() kullan
+// $section array'i home.php'den geliyor ve zaten __() ile sarmalanmış olabilir
+$heroTitlePrefix = !empty($section['title']) ? $section['title'] : __($themeLoader->getSetting('title_prefix', 'This is something', 'hero'));
+$animatedWords = !empty($settings['animated_words']) ? $settings['animated_words'] : $themeLoader->getSetting('animated_words', 'amazing,new,wonderful,beautiful,smart', 'hero');
 $animatedWordsArray = array_map('trim', explode(',', $animatedWords));
 if (empty($animatedWordsArray) || count($animatedWordsArray) < 2) {
     $animatedWordsArray = ['amazing', 'new', 'wonderful', 'beautiful', 'smart'];
 }
-$heroSubtitle = $themeLoader->getSetting('subtitle', 'Managing a small business today is already tough. Avoid further complications by ditching outdated, tedious trade methods. Our goal is to streamline SMB trade, making it easier and faster than ever.', 'hero');
-$primaryButtonText = $themeLoader->getSetting('button_text', 'Hemen Başla', 'hero');
-$primaryButtonLink = $themeLoader->getSetting('button_link', '/contact', 'hero');
-$secondaryButtonText = $themeLoader->getSetting('secondary_button_text', 'Demo Paneli Gör', 'hero');
-$secondaryButtonLink = $themeLoader->getSetting('secondary_button_link', '/admin', 'hero');
+// Animated words'ü çevir
+$animatedWordsArray = array_map(function($word) {
+    return __(trim($word));
+}, $animatedWordsArray);
+$heroSubtitle = !empty($section['subtitle']) ? $section['subtitle'] : __($themeLoader->getSetting('subtitle', 'Managing a small business today is already tough. Avoid further complications by ditching outdated, tedious trade methods. Our goal is to streamline SMB trade, making it easier and faster than ever.', 'hero'));
+$primaryButtonText = !empty($settings['button_text']) ? $settings['button_text'] : __($themeLoader->getSetting('button_text', 'Hemen Başla', 'hero'));
+$primaryButtonLinkRaw = !empty($settings['button_link']) ? $settings['button_link'] : $themeLoader->getSetting('button_link', '/contact', 'hero');
+$primaryButtonLink = function_exists('localized_url') ? localized_url($primaryButtonLinkRaw) : $primaryButtonLinkRaw;
+$secondaryButtonText = !empty($settings['secondary_button_text']) ? $settings['secondary_button_text'] : __($themeLoader->getSetting('secondary_button_text', 'Demo Paneli Gör', 'hero'));
+$secondaryButtonLinkRaw = !empty($settings['secondary_button_link']) ? $settings['secondary_button_link'] : $themeLoader->getSetting('secondary_button_link', '/admin', 'hero');
+// Admin linki için dil prefix'i ekleme (admin paneli her zaman varsayılan dilde)
+$secondaryButtonLink = (strpos($secondaryButtonLinkRaw, '/admin') === 0) ? site_url($secondaryButtonLinkRaw) : (function_exists('localized_url') ? localized_url($secondaryButtonLinkRaw) : $secondaryButtonLinkRaw);
 
 // Top Button Özelleştirme
-$topButtonEnabled = $themeLoader->getSetting('top_button_enabled', true, 'hero');
+$topButtonEnabled = isset($settings['top_button_enabled']) ? $settings['top_button_enabled'] : $themeLoader->getSetting('top_button_enabled', true, 'hero');
 $topButtonEnabled = !($topButtonEnabled === '0' || $topButtonEnabled === false || $topButtonEnabled === 'false');
-$topButtonText = $themeLoader->getSetting('top_button_text', 'Read our launch article', 'hero');
-$topButtonLink = $themeLoader->getSetting('top_button_link', '/blog', 'hero');
-$topButtonStyle = $themeLoader->getSetting('top_button_style', 'secondary', 'hero'); // secondary, outline, primary
-$topButtonIcon = $themeLoader->getSetting('top_button_icon', 'arrow', 'hero'); // arrow, external, none
+$topButtonText = !empty($settings['top_button_text']) ? $settings['top_button_text'] : __($themeLoader->getSetting('top_button_text', 'Read our launch article', 'hero'));
+$topButtonLinkRaw = !empty($settings['top_button_link']) ? $settings['top_button_link'] : $themeLoader->getSetting('top_button_link', '/blog', 'hero');
+$topButtonLink = function_exists('localized_url') ? localized_url($topButtonLinkRaw) : $topButtonLinkRaw;
+$topButtonStyle = !empty($settings['top_button_style']) ? $settings['top_button_style'] : $themeLoader->getSetting('top_button_style', 'secondary', 'hero'); // secondary, outline, primary
+$topButtonIcon = !empty($settings['top_button_icon']) ? $settings['top_button_icon'] : $themeLoader->getSetting('top_button_icon', 'arrow', 'hero'); // arrow, external, none
 
 $heroId = 'animated-hero-' . uniqid();
 ?>
@@ -136,8 +145,8 @@ $heroId = 'animated-hero-' . uniqid();
     </div>
     
     <!-- Scroll Down Button -->
-    <a href="#" class="hero-scroll-link hero-scroll-indicator" role="button" aria-label="Aşağı kaydır">
-        <span class="scroll-text text-xs uppercase tracking-wider text-white/60 opacity-0 transition-opacity duration-300">Aşağı Kaydır</span>
+    <a href="#" class="hero-scroll-link hero-scroll-indicator" role="button" aria-label="<?php echo esc_attr__('Aşağı kaydır'); ?>">
+        <span class="scroll-text text-xs uppercase tracking-wider text-white/60 opacity-0 transition-opacity duration-300"><?php echo esc_html__('Aşağı Kaydır'); ?></span>
         <div class="scroll-mouse"></div>
     </a>
     

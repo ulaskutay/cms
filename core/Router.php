@@ -63,6 +63,38 @@ class Router {
         // Başındaki ve sonundaki slash'leri temizle
         $path = trim($path, '/');
         
+        // Translation modülü aktifse, URL'deki dil kodunu çıkar (örn: /en/page-slug -> /page-slug)
+        if (class_exists('ModuleLoader')) {
+            $moduleLoader = ModuleLoader::getInstance();
+            $translationModule = $moduleLoader->getModuleController('translation');
+            if ($translationModule) {
+                $pathParts = explode('/', $path);
+                if (!empty($pathParts[0]) && strlen($pathParts[0]) === 2) {
+                    // İlk segment dil kodu olabilir, kontrol et
+                    require_once __DIR__ . '/../modules/translation/models/TranslationModel.php';
+                    $translationModel = new TranslationModel();
+                    if ($translationModel->isValidLanguage($pathParts[0])) {
+                        $langCode = $pathParts[0];
+                        
+                        // Varsayılan dil için redirect yap (örn: /tr/about -> /about)
+                        $defaultLang = get_module_setting('translation', 'default_language', 'tr');
+                        if ($langCode === $defaultLang) {
+                            array_shift($pathParts);
+                            $newPath = '/' . implode('/', $pathParts);
+                            $newPath = rtrim($newPath, '/') ?: '/';
+                            header("Location: " . $newPath, true, 301);
+                            exit;
+                        }
+                        
+                        // Dil kodunu çıkar
+                        array_shift($pathParts);
+                        $path = implode('/', $pathParts);
+                        $path = trim($path, '/');
+                    }
+                }
+            }
+        }
+        
         return $path ?: '/';
     }
     

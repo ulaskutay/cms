@@ -77,7 +77,25 @@ class ModuleLoader {
     }
     
     private function __construct() {
-        $this->modules_dir = dirname(__DIR__) . '/modules';
+        // Modül dizini: core/ dizininden bir seviye yukarı çık (core -> public_html), sonra /modules ekle
+        // __DIR__ = /home/codeticc/public_html/core
+        // __DIR__ . '/../modules' = /home/codeticc/public_html/modules
+        $modulesPath = __DIR__ . '/../modules';
+        
+        // Real path ile doğrula (symlink'ler için)
+        $realPath = realpath($modulesPath);
+        if ($realPath && is_dir($realPath)) {
+            $this->modules_dir = $realPath;
+        } else {
+            // Real path bulunamazsa, normalize et (../ işaretlerini çöz)
+            $normalized = realpath(dirname(__DIR__)) . '/modules';
+            if ($normalized && is_dir($normalized)) {
+                $this->modules_dir = $normalized;
+            } else {
+                // Son çare: dirname ile dene
+                $this->modules_dir = dirname(__DIR__) . '/modules';
+            }
+        }
         
         // Modül dizini yoksa oluştur
         if (!is_dir($this->modules_dir)) {
@@ -440,6 +458,12 @@ class ModuleLoader {
             return;
         }
         
+        $debugMode = (defined('DEBUG_MODE') && DEBUG_MODE) || (ini_get('display_errors') == 1);
+        
+        if ($debugMode) {
+            error_log("ModuleLoader::registerModuleRoutes - Module: {$module['name']}, Routes: " . count($module['routes']));
+        }
+        
         foreach ($module['routes'] as $route) {
             $route_data = [
                 'module' => $module['name'],
@@ -451,6 +475,10 @@ class ModuleLoader {
             
             $type = $route['type'] ?? 'frontend';
             $this->routes[$type][] = $route_data;
+            
+            if ($debugMode) {
+                error_log("  Registered route: {$type} - {$route_data['path']} -> {$route_data['handler']}");
+            }
         }
     }
     
@@ -964,14 +992,30 @@ class ModuleLoader {
         // Path'i normalize et (baştaki ve sondaki slash'leri kaldır)
         $path = trim($path, '/');
         
-        foreach ($this->routes['frontend'] as $route) {
+        // Debug modu kontrolü
+        $debugMode = (defined('DEBUG_MODE') && DEBUG_MODE) || (ini_get('display_errors') == 1);
+        
+        if ($debugMode) {
+            error_log("ModuleLoader::handleFrontendRoute - Path: '$path'");
+            error_log("Total frontend routes: " . count($this->routes['frontend']));
+        }
+        
+        foreach ($this->routes['frontend'] as $index => $route) {
             // Route path'ini normalize et
             $routePath = trim($route['path'], '/');
+            
+            if ($debugMode) {
+                error_log("  Route #$index: '{$routePath}' (handler: {$route['handler']})");
+            }
             
             // Tam eşleşme kontrolü (parametreli route'lar için)
             if ($routePath === $path) {
                 $controller = $route['controller'];
                 $handler = $route['handler'];
+                
+                if ($debugMode) {
+                    error_log("    Exact match found! Calling {$route['module']}::{$handler}");
+                }
                 
                 if (method_exists($controller, $handler)) {
                     call_user_func([$controller, $handler]);
@@ -982,16 +1026,33 @@ class ModuleLoader {
             // Pattern eşleştirme (parametreli route'lar için)
             $pattern = $this->routeToPattern($routePath);
             
+            if ($debugMode) {
+                error_log("    Pattern: $pattern");
+            }
+            
             if (preg_match($pattern, $path, $matches)) {
                 $controller = $route['controller'];
                 $handler = $route['handler'];
+                
+                if ($debugMode) {
+                    error_log("    Pattern match found! Matches: " . print_r($matches, true));
+                    error_log("    Calling {$route['module']}::{$handler} with params: " . print_r(array_slice($matches, 1), true));
+                }
                 
                 if (method_exists($controller, $handler)) {
                     array_shift($matches); // İlk eleman tam eşleşme
                     call_user_func_array([$controller, $handler], $matches);
                     return true;
+                } else {
+                    if ($debugMode) {
+                        error_log("    ERROR: Method {$handler} not found in controller");
+                    }
                 }
             }
+        }
+        
+        if ($debugMode) {
+            error_log("No route matched for path: '$path'");
         }
         
         return false;
@@ -1022,19 +1083,15 @@ function module_loader() {
 
 /**
  * Modül aktif mi kontrol eder
+ * NOT: Bu fonksiyon includes/functions.php'de tanımlı, burada sadece dokümantasyon
  */
-function is_module_active($name) {
-    $loader = ModuleLoader::getInstance();
-    $module = $loader->getModule($name);
-    return $module && $module['is_active'];
-}
+// function is_module_active() moved to includes/functions.php to avoid redeclaration
 
 /**
  * Modül ayarını getirir
+ * NOT: Bu fonksiyon includes/functions.php'de tanımlı, burada sadece dokümantasyon
  */
-function get_module_setting($module, $key, $default = null) {
-    return ModuleLoader::getInstance()->getModuleSetting($module, $key, $default);
-}
+// function get_module_setting() moved to includes/functions.php to avoid redeclaration
 
 /**
  * Widget render eder

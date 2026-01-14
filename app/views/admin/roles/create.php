@@ -8,7 +8,7 @@
             ?>
 
             <!-- Main Content -->
-            <main class="main-content-with-sidebar flex-1 p-6 lg:p-10 bg-gray-50 dark:bg-[#15202b]">
+            <main class="main-content-with-sidebar flex-1 p-6 lg:p-10 lg:ml-64 bg-gray-50 dark:bg-[#15202b]">
                 <div class="layout-content-container flex flex-col w-full mx-auto max-w-7xl">
                     <!-- PageHeading -->
                     <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">

@@ -161,7 +161,7 @@ $menuLocation = $menu['location'] ?? 'header';
             include __DIR__ . '/../snippets/sidebar.php'; 
             ?>
 
-            <main class="main-content-with-sidebar flex-1 p-4 sm:p-6 lg:p-8 bg-gray-50 dark:bg-[#15202b]">
+            <main class="main-content-with-sidebar flex-1 p-4 sm:p-6 lg:p-8 lg:ml-64 bg-gray-50 dark:bg-[#15202b]">
                 <div class="max-w-7xl mx-auto">
                     
                     <!-- Header -->

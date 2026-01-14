@@ -1,0 +1,26 @@
+{
+    "name": "translation",
+    "title": "Çoklu Dil Yönetimi",
+    "version": "1.0.0",
+    "description": "DeepL API ile çoklu dil desteği ve otomatik çeviri. URL yapısı: /en/, /de/, /tr/",
+    "author": "Codetic",
+    "website": "https://example.com",
+    "requires_php": "7.4",
+    "requires_cms": "1.0",
+    "main_file": "Controller.php",
+    "admin_menu": {
+        "title": "Dil Yönetimi",
+        "icon": "translate",
+        "position": 80
+    },
+    "routes": [],
+    "shortcodes": [
+        "language_switcher"
+    ],
+    "widgets": [],
+    "settings": true,
+    "hooks": {
+        "actions": ["init", "wp_head"],
+        "filters": ["the_content", "document_title"]
+    }
+}

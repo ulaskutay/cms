@@ -37,36 +37,36 @@ if ($formId) {
 if (!$form || ($form['status'] ?? '') !== 'active') {
     $form = [
         'id' => 0,
-        'name' => 'Teklif Al',
+        'name' => __('Teklif Al'),
         'slug' => 'teklif-al',
         'status' => 'active',
-        'success_message' => 'Talebiniz başarıyla alındı. En kısa sürede size dönüş yapacağız.',
+        'success_message' => __('Talebiniz başarıyla alındı. En kısa sürede size dönüş yapacağız.'),
         'fields' => []
     ];
 }
 
 // Page title ve meta
-$pageTitle = $page['title'] ?? $form['name'] ?? 'Teklif Al';
-$pageDescription = $page['excerpt'] ?? $page['meta_description'] ?? $form['description'] ?? 'Projeniz için detaylı teklif alın';
+$pageTitle = $page['title'] ?? $form['name'] ?? __('Teklif Al');
+$pageDescription = $page['excerpt'] ?? $page['meta_description'] ?? $form['description'] ?? __('Projeniz için detaylı teklif alın');
 
 // ÖZEL FORM YAPISI - 4 Adım (Codetic'e Özel)
 
 // Adım 1: Müşteri Tipi (Kart Seçimi - Otomatik geçiş)
 $step1 = [
-    'title' => 'Merhaba! Sizi tanıyalım',
-    'subtitle' => 'Projenizi kim için planlıyorsunuz?',
+    'title' => __('Merhaba! Sizi tanıyalım'),
+    'subtitle' => __('Projenizi kim için planlıyorsunuz?'),
     'stepNumber' => 1,
     'options' => [
         [
             'value' => 'company',
-            'label' => 'Kurumsal Proje',
-            'description' => 'Şirket, marka veya işletme için dijital çözümler.',
+            'label' => __('Kurumsal Proje'),
+            'description' => __('Şirket, marka veya işletme için dijital çözümler.'),
             'icon' => '🏢'
         ],
         [
             'value' => 'personal',
-            'label' => 'Bireysel Proje',
-            'description' => 'Kişisel site, blog veya portfolyo projesi.',
+            'label' => __('Bireysel Proje'),
+            'description' => __('Kişisel site, blog veya portfolyo projesi.'),
             'icon' => '🚀'
         ]
     ]
@@ -74,69 +74,69 @@ $step1 = [
 
 // Adım 2: Proje Kapsamı (Kategorili Checkbox Grid)
 $step2 = [
-    'title' => 'Hangi hizmetlerle ilgileniyorsunuz?',
-    'subtitle' => 'İhtiyacınız olan hizmetleri seçin (birden fazla seçebilirsiniz)',
+    'title' => __('Hangi hizmetlerle ilgileniyorsunuz?'),
+    'subtitle' => __('İhtiyacınız olan hizmetleri seçin (birden fazla seçebilirsiniz)'),
     'stepNumber' => 2,
     'categories' => [
         'web' => [
-            'name' => 'Web & Yazılım',
+            'name' => __('Web & Yazılım'),
             'icon' => '💻',
             'color' => 'from-blue-500/20 to-blue-600/10',
             'services' => [
-                ['value' => 'kurumsal_web_sitesi', 'label' => 'Kurumsal Web Sitesi'],
-                ['value' => 'e_ticaret_sitesi', 'label' => 'E-Ticaret Sitesi'],
-                ['value' => 'ozel_yazilim', 'label' => 'Özel Yazılım Geliştirme'],
-                ['value' => 'mobil_uygulama', 'label' => 'Mobil Uygulama'],
-                ['value' => 'landing_page', 'label' => 'Landing Page'],
-                ['value' => 'cms_kurulum', 'label' => 'CMS Kurulumu (WordPress vb.)']
+                ['value' => 'kurumsal_web_sitesi', 'label' => __('Kurumsal Web Sitesi')],
+                ['value' => 'e_ticaret_sitesi', 'label' => __('E-Ticaret Sitesi')],
+                ['value' => 'ozel_yazilim', 'label' => __('Özel Yazılım Geliştirme')],
+                ['value' => 'mobil_uygulama', 'label' => __('Mobil Uygulama')],
+                ['value' => 'landing_page', 'label' => __('Landing Page')],
+                ['value' => 'cms_kurulum', 'label' => __('CMS Kurulumu (WordPress vb.)')]
             ]
         ],
         'social' => [
-            'name' => 'Sosyal Medya',
+            'name' => __('Sosyal Medya'),
             'icon' => '📱',
             'color' => 'from-pink-500/20 to-pink-600/10',
             'services' => [
-                ['value' => 'sosyal_medya_yonetimi', 'label' => 'Sosyal Medya Yönetimi'],
-                ['value' => 'instagram_reklam', 'label' => 'Instagram Reklam Yönetimi'],
-                ['value' => 'meta_reklam', 'label' => 'Meta (Facebook) Reklam Yönetimi'],
-                ['value' => 'sosyal_medya_icerik', 'label' => 'Sosyal Medya İçerik Üretimi'],
-                ['value' => 'influencer_marketing', 'label' => 'Influencer Marketing']
+                ['value' => 'sosyal_medya_yonetimi', 'label' => __('Sosyal Medya Yönetimi')],
+                ['value' => 'instagram_reklam', 'label' => __('Instagram Reklam Yönetimi')],
+                ['value' => 'meta_reklam', 'label' => __('Meta (Facebook) Reklam Yönetimi')],
+                ['value' => 'sosyal_medya_icerik', 'label' => __('Sosyal Medya İçerik Üretimi')],
+                ['value' => 'influencer_marketing', 'label' => __('Influencer Marketing')]
             ]
         ],
         'ads' => [
-            'name' => 'Reklam & SEO',
+            'name' => __('Reklam & SEO'),
             'icon' => '📈',
             'color' => 'from-green-500/20 to-green-600/10',
             'services' => [
-                ['value' => 'google_ads', 'label' => 'Google Reklam Yönetimi'],
-                ['value' => 'google_alisveris', 'label' => 'Google Alışveriş Reklamları'],
-                ['value' => 'e_ticaret_reklamlari', 'label' => 'E-Ticaret Reklamları'],
-                ['value' => 'seo', 'label' => 'SEO (Arama Motoru Optimizasyonu)'],
-                ['value' => 'youtube_reklam', 'label' => 'YouTube Reklam Yönetimi']
+                ['value' => 'google_ads', 'label' => __('Google Reklam Yönetimi')],
+                ['value' => 'google_alisveris', 'label' => __('Google Alışveriş Reklamları')],
+                ['value' => 'e_ticaret_reklamlari', 'label' => __('E-Ticaret Reklamları')],
+                ['value' => 'seo', 'label' => __('SEO (Arama Motoru Optimizasyonu)')],
+                ['value' => 'youtube_reklam', 'label' => __('YouTube Reklam Yönetimi')]
             ]
         ],
         'design' => [
-            'name' => 'Tasarım & Marka',
+            'name' => __('Tasarım & Marka'),
             'icon' => '🎨',
             'color' => 'from-purple-500/20 to-purple-600/10',
             'services' => [
-                ['value' => 'logo_tasarim', 'label' => 'Logo Tasarımı'],
-                ['value' => 'kurumsal_kimlik', 'label' => 'Kurumsal Kimlik'],
-                ['value' => 'ui_ux_tasarim', 'label' => 'UI/UX Tasarım'],
-                ['value' => 'grafik_tasarim', 'label' => 'Grafik Tasarım'],
-                ['value' => 'video_produksiyon', 'label' => 'Video Prodüksiyon']
+                ['value' => 'logo_tasarim', 'label' => __('Logo Tasarımı')],
+                ['value' => 'kurumsal_kimlik', 'label' => __('Kurumsal Kimlik')],
+                ['value' => 'ui_ux_tasarim', 'label' => __('UI/UX Tasarım')],
+                ['value' => 'grafik_tasarim', 'label' => __('Grafik Tasarım')],
+                ['value' => 'video_produksiyon', 'label' => __('Video Prodüksiyon')]
             ]
         ],
         'other' => [
-            'name' => 'Diğer Hizmetler',
+            'name' => __('Diğer Hizmetler'),
             'icon' => '⚙️',
             'color' => 'from-orange-500/20 to-orange-600/10',
             'services' => [
-                ['value' => 'hosting_domain', 'label' => 'Hosting & Domain'],
-                ['value' => 'teknik_destek', 'label' => 'Teknik Destek & Bakım'],
-                ['value' => 'danismanlik', 'label' => 'Dijital Danışmanlık'],
-                ['value' => 'email_pazarlama', 'label' => 'E-Mail Pazarlama'],
-                ['value' => 'icerik_yazarligi', 'label' => 'İçerik Yazarlığı']
+                ['value' => 'hosting_domain', 'label' => __('Hosting & Domain')],
+                ['value' => 'teknik_destek', 'label' => __('Teknik Destek & Bakım')],
+                ['value' => 'danismanlik', 'label' => __('Dijital Danışmanlık')],
+                ['value' => 'email_pazarlama', 'label' => __('E-Mail Pazarlama')],
+                ['value' => 'icerik_yazarligi', 'label' => __('İçerik Yazarlığı')]
             ]
         ]
     ]
@@ -144,47 +144,47 @@ $step2 = [
 
 // Adım 3: Proje Detayları
 $step3 = [
-    'title' => 'Projenizi biraz anlatın',
-    'subtitle' => 'Ne kadar detay verirseniz, o kadar doğru teklif hazırlarız',
+    'title' => __('Projenizi biraz anlatın'),
+    'subtitle' => __('Ne kadar detay verirseniz, o kadar doğru teklif hazırlarız'),
     'stepNumber' => 3,
     'fields' => [
-        ['name' => 'current_site', 'label' => 'Mevcut Siteniz (varsa)', 'type' => 'text', 'placeholder' => 'örn: www.mevcutsite.com', 'required' => false],
-        ['name' => 'reference_sites', 'label' => 'Beğendiğiniz Referans Siteler', 'type' => 'text', 'placeholder' => 'Beğendiğiniz 1-2 site linki yazabilirsiniz', 'required' => false],
-        ['name' => 'budget_range', 'label' => 'Tahmini Bütçe Aralığı', 'type' => 'select', 'placeholder' => 'Seçiniz', 'required' => false, 'options' => [
-            '' => 'Henüz belirlemedim',
-            '5000-15000' => '₺5.000 - ₺15.000',
-            '15000-30000' => '₺15.000 - ₺30.000',
-            '30000-50000' => '₺30.000 - ₺50.000',
-            '50000+' => '₺50.000 ve üzeri'
+        ['name' => 'current_site', 'label' => __('Mevcut Siteniz (varsa)'), 'type' => 'text', 'placeholder' => __('örn: www.mevcutsite.com'), 'required' => false],
+        ['name' => 'reference_sites', 'label' => __('Beğendiğiniz Referans Siteler'), 'type' => 'text', 'placeholder' => __('Beğendiğiniz 1-2 site linki yazabilirsiniz'), 'required' => false],
+        ['name' => 'budget_range', 'label' => __('Tahmini Bütçe Aralığı'), 'type' => 'select', 'placeholder' => __('Seçiniz'), 'required' => false, 'options' => [
+            '' => __('Henüz belirlemedim'),
+            '5000-15000' => __('₺5.000 - ₺15.000'),
+            '15000-30000' => __('₺15.000 - ₺30.000'),
+            '30000-50000' => __('₺30.000 - ₺50.000'),
+            '50000+' => __('₺50.000 ve üzeri')
         ]],
-        ['name' => 'timeline', 'label' => 'Projenin Tamamlanma Süresi', 'type' => 'select', 'placeholder' => 'Seçiniz', 'required' => false, 'options' => [
-            '' => 'Esnek',
-            'acil' => 'Acil (1-2 hafta)',
-            '1ay' => '1 ay içinde',
-            '2-3ay' => '2-3 ay içinde',
-            'belirsiz' => 'Belirli bir süre yok'
+        ['name' => 'timeline', 'label' => __('Projenin Tamamlanma Süresi'), 'type' => 'select', 'placeholder' => __('Seçiniz'), 'required' => false, 'options' => [
+            '' => __('Esnek'),
+            'acil' => __('Acil (1-2 hafta)'),
+            '1ay' => __('1 ay içinde'),
+            '2-3ay' => __('2-3 ay içinde'),
+            'belirsiz' => __('Belirli bir süre yok')
         ]],
-        ['name' => 'project_details', 'label' => 'Proje Hakkında Notlarınız', 'type' => 'textarea', 'placeholder' => 'Projenizle ilgili eklemek istediğiniz detaylar, özel istekler veya sorularınız...', 'required' => false]
+        ['name' => 'project_details', 'label' => __('Proje Hakkında Notlarınız'), 'type' => 'textarea', 'placeholder' => __('Projenizle ilgili eklemek istediğiniz detaylar, özel istekler veya sorularınız...'), 'required' => false]
     ]
 ];
 
 // Adım 4: İletişim Bilgileri + KVKK
 $step4 = [
-    'title' => 'Son adım! İletişim bilgileriniz',
-    'subtitle' => 'Teklifinizi hazırlayıp size ulaşalım',
+    'title' => __('Son adım! İletişim bilgileriniz'),
+    'subtitle' => __('Teklifinizi hazırlayıp size ulaşalım'),
     'stepNumber' => 4,
     'company_fields' => [
-        ['name' => 'company_name', 'label' => 'Şirket / Marka Adı', 'type' => 'text', 'placeholder' => 'Şirket veya marka adınız', 'required' => true],
-        ['name' => 'sector', 'label' => 'Sektör', 'type' => 'text', 'placeholder' => 'örn: Teknoloji, E-ticaret, Sağlık...', 'required' => false]
+        ['name' => 'company_name', 'label' => __('Şirket / Marka Adı'), 'type' => 'text', 'placeholder' => __('Şirket veya marka adınız'), 'required' => true],
+        ['name' => 'sector', 'label' => __('Sektör'), 'type' => 'text', 'placeholder' => __('örn: Teknoloji, E-ticaret, Sağlık...'), 'required' => false]
     ],
     'personal_fields' => [
-        ['name' => 'fullname', 'label' => 'Ad Soyad', 'type' => 'text', 'placeholder' => 'Adınız Soyadınız', 'required' => true, 'half' => false],
-        ['name' => 'email', 'label' => 'E-posta Adresi', 'type' => 'email', 'placeholder' => 'ornek@email.com', 'required' => true, 'half' => true],
-        ['name' => 'phone', 'label' => 'Telefon', 'type' => 'tel', 'placeholder' => '05XX XXX XX XX', 'required' => true, 'half' => true],
-        ['name' => 'preferred_contact', 'label' => 'Tercih Ettiğiniz İletişim Yöntemi', 'type' => 'select', 'placeholder' => 'Seçiniz', 'required' => false, 'half' => false, 'options' => [
-            'phone' => 'Telefon ile arayın',
-            'whatsapp' => 'WhatsApp mesajı',
-            'email' => 'E-posta ile dönüş yapın'
+        ['name' => 'fullname', 'label' => __('Ad Soyad'), 'type' => 'text', 'placeholder' => __('Adınız Soyadınız'), 'required' => true, 'half' => false],
+        ['name' => 'email', 'label' => __('E-posta Adresi'), 'type' => 'email', 'placeholder' => __('ornek@email.com'), 'required' => true, 'half' => true],
+        ['name' => 'phone', 'label' => __('Telefon'), 'type' => 'tel', 'placeholder' => __('05XX XXX XX XX'), 'required' => true, 'half' => true],
+        ['name' => 'preferred_contact', 'label' => __('Tercih Ettiğiniz İletişim Yöntemi'), 'type' => 'select', 'placeholder' => __('Seçiniz'), 'required' => false, 'half' => false, 'options' => [
+            'phone' => __('Telefon ile arayın'),
+            'whatsapp' => __('WhatsApp mesajı'),
+            'email' => __('E-posta ile dönüş yapın')
         ]]
     ]
 ];
@@ -342,7 +342,7 @@ ob_start();
 
                     <!-- Adım Göstergesi -->
                     <div class="text-center mt-10 pt-6 border-t border-slate-700/50">
-                        <div class="text-slate-500 text-sm">Adım <span class="text-primary font-bold">1</span> / <?php echo $totalSteps; ?></div>
+                        <div class="text-slate-500 text-sm"><?php echo __('Adım'); ?> <span class="text-primary font-bold">1</span> / <?php echo $totalSteps; ?></div>
                     </div>
                 </div>
 
@@ -396,7 +396,7 @@ ob_start();
                     <!-- Seçilen Hizmetler Özeti -->
                     <div id="selected-services-summary" class="hidden mt-6 p-4 rounded-xl bg-primary/10 border border-primary/30">
                         <div class="flex items-center justify-between">
-                            <span class="text-white font-medium">Seçilen hizmetler:</span>
+                            <span class="text-white font-medium"><?php echo __('Seçilen hizmetler:'); ?></span>
                             <span id="selected-services-count" class="text-primary font-bold">0</span>
                         </div>
                     </div>
@@ -407,11 +407,11 @@ ob_start();
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
                             </svg>
-                            Geri
+                            <?php echo __('Geri'); ?>
                         </button>
-                        <div class="text-slate-500 text-sm">Adım <span class="text-primary font-bold">2</span> / <?php echo $totalSteps; ?></div>
+                        <div class="text-slate-500 text-sm"><?php echo __('Adım'); ?> <span class="text-primary font-bold">2</span> / <?php echo $totalSteps; ?></div>
                         <button type="button" class="quote-next-btn px-8 py-3 rounded-xl bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white transition-all duration-200 flex items-center gap-2 font-semibold shadow-lg shadow-primary/20 hover:shadow-primary/30" data-step="2" data-next-step="3">
-                            İleri
+                            <?php echo __('İleri'); ?>
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                             </svg>
@@ -470,11 +470,11 @@ ob_start();
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
                             </svg>
-                            Geri
+                            <?php echo __('Geri'); ?>
                         </button>
-                        <div class="text-slate-500 text-sm">Adım <span class="text-primary font-bold">3</span> / <?php echo $totalSteps; ?></div>
+                        <div class="text-slate-500 text-sm"><?php echo __('Adım'); ?> <span class="text-primary font-bold">3</span> / <?php echo $totalSteps; ?></div>
                         <button type="button" class="quote-next-btn px-8 py-3 rounded-xl bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white transition-all duration-200 flex items-center gap-2 font-semibold shadow-lg shadow-primary/20 hover:shadow-primary/30" data-step="3" data-next-step="4">
-                            İleri
+                            <?php echo __('İleri'); ?>
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                             </svg>
@@ -492,7 +492,7 @@ ob_start();
                     <!-- Şirket Bilgileri (Şirket seçildiğinde görünür) -->
                     <div id="company-fields" class="hidden mb-8 p-6 rounded-2xl bg-slate-800/30 border border-slate-700/50">
                         <h3 class="text-white text-lg font-semibold mb-5 flex items-center gap-2">
-                            <span class="text-2xl">🏢</span> Şirket Bilgileri
+                            <span class="text-2xl">🏢</span> <?php echo __('Şirket Bilgileri'); ?>
                         </h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <?php foreach ($step4['company_fields'] as $field): ?>
@@ -516,7 +516,7 @@ ob_start();
                     <!-- Kişisel Bilgiler -->
                     <div class="p-6 rounded-2xl bg-slate-800/30 border border-slate-700/50">
                         <h3 class="text-white text-lg font-semibold mb-5 flex items-center gap-2">
-                            <span class="text-2xl">👤</span> İletişim Bilgileriniz
+                            <span class="text-2xl">👤</span> <?php echo __('İletişim Bilgileriniz'); ?>
                         </h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <?php foreach ($step4['personal_fields'] as $field): ?>
@@ -554,20 +554,13 @@ ob_start();
                     <!-- KVKK -->
                     <div class="mt-6">
                         <label class="flex items-start gap-4 p-5 rounded-xl bg-slate-800/30 border border-slate-700/50 hover:bg-slate-800/50 cursor-pointer transition-all group">
-                            <div class="relative flex items-center justify-center mt-0.5">
-                                <input type="checkbox" 
-                                       name="kvkk" 
-                                       value="1"
-                                       class="peer sr-only"
-                                       required>
-                                <div class="w-6 h-6 rounded-lg border-2 border-slate-600 bg-slate-900 flex items-center justify-center transition-all peer-checked:bg-primary peer-checked:border-primary">
-                                    <svg class="w-4 h-4 text-white opacity-0 peer-checked:opacity-100 transition-opacity" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                                    </svg>
-                                </div>
-                            </div>
-                            <span class="text-slate-300 text-sm leading-relaxed group-hover:text-white transition-colors">
-                                <a href="/kvkk" target="_blank" class="text-primary hover:underline">KVKK Aydınlatma Metni</a>'ni okudum ve kişisel verilerimin işlenmesini kabul ediyorum.
+                            <input type="checkbox" 
+                                   name="kvkk" 
+                                   value="1"
+                                   class="quote-kvkk-checkbox mt-1"
+                                   required>
+                            <span class="text-slate-300 text-sm leading-relaxed group-hover:text-white transition-colors flex-1">
+                                <a href="/kvkk" target="_blank" class="text-primary hover:underline"><?php echo __('KVKK Aydınlatma Metni'); ?></a><?php echo __('\'ni okudum ve kişisel verilerimin işlenmesini kabul ediyorum.'); ?>
                             </span>
                         </label>
                     </div>
@@ -581,11 +574,11 @@ ob_start();
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
                             </svg>
-                            Geri
+                            <?php echo __('Geri'); ?>
                         </button>
-                        <div class="text-slate-500 text-sm">Adım <span class="text-primary font-bold">4</span> / <?php echo $totalSteps; ?></div>
+                        <div class="text-slate-500 text-sm"><?php echo __('Adım'); ?> <span class="text-primary font-bold">4</span> / <?php echo $totalSteps; ?></div>
                         <button type="submit" class="quote-submit-btn px-10 py-4 rounded-xl bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold transition-all duration-200 flex items-center gap-3 shadow-lg shadow-green-500/20 hover:shadow-green-500/30 text-lg">
-                            <span class="submit-text">Teklif İste</span>
+                            <span class="submit-text"><?php echo __('Teklif İste'); ?></span>
                             <span class="submit-loading hidden">
                                 <svg class="animate-spin w-6 h-6" fill="none" viewBox="0 0 24 24">
                                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -607,15 +600,15 @@ ob_start();
                         <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
                     </svg>
                 </div>
-                <h3 class="text-white text-3xl font-bold mb-4">Talebiniz Alındı! 🎉</h3>
+                <h3 class="text-white text-3xl font-bold mb-4"><?php echo __('Talebiniz Alındı!'); ?> 🎉</h3>
                 <p class="text-slate-400 text-lg mb-8 max-w-md mx-auto">
-                    <?php echo esc_html($form['success_message'] ?? 'En kısa sürede size geri dönüş yapacağız.'); ?>
+                    <?php echo esc_html($form['success_message'] ?? __('En kısa sürede size geri dönüş yapacağız.')); ?>
                 </p>
                 <a href="/" class="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white transition-all duration-200 font-semibold shadow-lg shadow-primary/20">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
                     </svg>
-                    Anasayfaya Dön
+                    <?php echo __('Anasayfaya Dön'); ?>
                 </a>
             </div>
         </div>
@@ -717,7 +710,8 @@ ob_start();
 }
 
 /* Checkbox Styling */
-.quote-service-checkbox {
+.quote-service-checkbox,
+.quote-kvkk-checkbox {
     appearance: none;
     -webkit-appearance: none;
     width: 22px;
@@ -731,16 +725,19 @@ ob_start();
     transition: all 0.2s ease;
 }
 
-.quote-service-checkbox:hover {
+.quote-service-checkbox:hover,
+.quote-kvkk-checkbox:hover {
     border-color: var(--primary-color, #137fec);
 }
 
-.quote-service-checkbox:checked {
+.quote-service-checkbox:checked,
+.quote-kvkk-checkbox:checked {
     background: var(--primary-color, #137fec);
     border-color: var(--primary-color, #137fec);
 }
 
-.quote-service-checkbox:checked::after {
+.quote-service-checkbox:checked::after,
+.quote-kvkk-checkbox:checked::after {
     content: '';
     position: absolute;
     left: 6px;
@@ -752,7 +749,8 @@ ob_start();
     transform: rotate(45deg);
 }
 
-.quote-service-checkbox:focus {
+.quote-service-checkbox:focus,
+.quote-kvkk-checkbox:focus {
     outline: none;
     box-shadow: 0 0 0 3px rgba(19, 127, 236, 0.3);
 }

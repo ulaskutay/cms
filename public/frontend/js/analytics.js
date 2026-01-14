@@ -109,12 +109,49 @@
         }
     });
     
-    // Periyodik duration güncellemesi (her 30 saniyede)
-    setInterval(function() {
-        if (document.visibilityState === 'visible') {
-            trackVisitDuration();
+    // Periyodik duration güncellemesi - requestIdleCallback kullan (her 30 saniyede)
+    let lastUpdateTime = Date.now();
+    const UPDATE_INTERVAL = 30000; // 30 saniye
+    
+    function scheduleNextUpdate() {
+        if (document.visibilityState !== 'visible') {
+            // Sayfa görünür değilse, visibilitychange'de tekrar dene
+            return;
         }
-    }, 30000);
+        
+        const timeSinceLastUpdate = Date.now() - lastUpdateTime;
+        const delay = Math.max(0, UPDATE_INTERVAL - timeSinceLastUpdate);
+        
+        if (window.requestIdleCallback) {
+            // requestIdleCallback kullan - browser boş olduğunda çalışır
+            window.requestIdleCallback(function() {
+                setTimeout(function() {
+                    trackVisitDuration();
+                    lastUpdateTime = Date.now();
+                    scheduleNextUpdate();
+                }, delay);
+            }, { timeout: delay + 1000 });
+        } else {
+            // Fallback: setTimeout
+            setTimeout(function() {
+                if (document.visibilityState === 'visible') {
+                    trackVisitDuration();
+                    lastUpdateTime = Date.now();
+                }
+                scheduleNextUpdate();
+            }, delay);
+        }
+    }
+    
+    // Visibility değişikliğinde güncelleme zamanla
+    document.addEventListener('visibilitychange', function() {
+        if (document.visibilityState === 'visible') {
+            scheduleNextUpdate();
+        }
+    });
+    
+    // İlk güncellemeyi zamanla
+    scheduleNextUpdate();
     
 })();
 

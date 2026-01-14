@@ -43,6 +43,9 @@ $footerMenuTitle = __($themeLoader->getCustomSetting('footer_menu_title', __('Qu
 $footerContactTitle = __($themeLoader->getCustomSetting('footer_contact_title', __('Contact')));
 $footerPostsTitle = __($themeLoader->getCustomSetting('footer_posts_title', __('Recent Posts')));
 
+// Footer'da gösterilecek yazı sayısı
+$footerPostsCount = (int) $themeLoader->getCustomSetting('footer_posts_count', 3);
+
 // Son yazıları getir
 $recentPosts = [];
 try {
@@ -57,7 +60,8 @@ try {
         require_once __DIR__ . '/../../../app/models/Post.php';
     }
     $postModel = new Post();
-    $recentPosts = $postModel->getRecent(5);
+    // Sadece belirtilen sayıda yazı getir
+    $recentPosts = $postModel->getRecent($footerPostsCount);
 } catch (Exception $e) {
     // Post modeli yüklenemezse boş bırak
     $recentPosts = [];

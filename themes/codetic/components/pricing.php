@@ -7,85 +7,85 @@
 $section = $section ?? [];
 $settings = $section['settings'] ?? [];
 
-// Section ayarları
-$sectionTitle = $section['title'] ?? 'Paketlerimiz';
-$sectionSubtitle = $section['subtitle'] ?? 'İhtiyacınıza uygun paketi seçin ve dijital dönüşümünüze başlayın.';
-$badge = $settings['badge'] ?? 'Fiyatlandırma';
+// Section ayarları - __() helper fonksiyonu kullanılıyor
+$sectionTitle = __($section['title'] ?? 'Paketlerimiz');
+$sectionSubtitle = __($section['subtitle'] ?? 'İhtiyacınıza uygun paketi seçin ve dijital dönüşümünüze başlayın.');
+$badge = __($settings['badge'] ?? 'Fiyatlandırma');
 
 // Varsayılan paketler
 $defaultPackages = [
     [
-        'name' => 'Başlangıç',
+        'name' => __('Başlangıç'),
         'price' => '₺2.500',
-        'period' => '/ay',
-        'description' => 'Küçük işletmeler ve kişisel projeler için ideal başlangıç paketi.',
+        'period' => __('/ay'),
+        'description' => __('Küçük işletmeler ve kişisel projeler için ideal başlangıç paketi.'),
         'features' => [
-            '5 Sayfa',
-            'Temel SEO',
-            'E-posta Desteği',
-            'SSL Sertifikası',
-            'Mobil Uyumlu Tasarım'
+            __('5 Sayfa'),
+            __('Temel SEO'),
+            __('E-posta Desteği'),
+            __('SSL Sertifikası'),
+            __('Mobil Uyumlu Tasarım')
         ],
-        'button_text' => 'Başla',
+        'button_text' => __('Başla'),
         'button_link' => '/contact',
         'popular' => false,
         'gradient' => 'from-slate-500 to-slate-600'
     ],
     [
-        'name' => 'Profesyonel',
+        'name' => __('Profesyonel'),
         'price' => '₺5.000',
-        'period' => '/ay',
-        'description' => 'Büyüyen işletmeler için gelişmiş özellikler ve destek.',
+        'period' => __('/ay'),
+        'description' => __('Büyüyen işletmeler için gelişmiş özellikler ve destek.'),
         'features' => [
-            '15 Sayfa',
-            'Gelişmiş SEO',
-            'Öncelikli Destek',
-            'SSL Sertifikası',
-            'Mobil Uyumlu Tasarım',
-            'Sosyal Medya Entegrasyonu',
-            'Analytics Entegrasyonu'
+            __('15 Sayfa'),
+            __('Gelişmiş SEO'),
+            __('Öncelikli Destek'),
+            __('SSL Sertifikası'),
+            __('Mobil Uyumlu Tasarım'),
+            __('Sosyal Medya Entegrasyonu'),
+            __('Analytics Entegrasyonu')
         ],
-        'button_text' => 'Başla',
+        'button_text' => __('Başla'),
         'button_link' => '/contact',
         'popular' => true,
         'gradient' => 'from-blue-500 to-purple-600'
     ],
     [
-        'name' => 'Kurumsal',
+        'name' => __('Kurumsal'),
         'price' => '₺10.000',
-        'period' => '/ay',
-        'description' => 'Büyük işletmeler için özel çözümler ve özel destek.',
+        'period' => __('/ay'),
+        'description' => __('Büyük işletmeler için özel çözümler ve özel destek.'),
         'features' => [
-            'Sınırsız Sayfa',
-            'Premium SEO',
-            '7/24 Öncelikli Destek',
-            'SSL Sertifikası',
-            'Mobil Uyumlu Tasarım',
-            'Sosyal Medya Entegrasyonu',
-            'Analytics Entegrasyonu',
-            'Özel Tasarım',
-            'API Entegrasyonları'
+            __('Sınırsız Sayfa'),
+            __('Premium SEO'),
+            __('7/24 Öncelikli Destek'),
+            __('SSL Sertifikası'),
+            __('Mobil Uyumlu Tasarım'),
+            __('Sosyal Medya Entegrasyonu'),
+            __('Analytics Entegrasyonu'),
+            __('Özel Tasarım'),
+            __('API Entegrasyonları')
         ],
-        'button_text' => 'Başla',
+        'button_text' => __('Başla'),
         'button_link' => '/contact',
         'popular' => false,
         'gradient' => 'from-violet-500 to-purple-600'
     ],
     [
-        'name' => 'Özel Çözüm',
-        'price' => 'Özel Fiyat',
+        'name' => __('Özel Çözüm'),
+        'price' => __('Özel Fiyat'),
         'period' => '',
-        'description' => 'Özel ihtiyaçlarınız için özelleştirilmiş çözümler.',
+        'description' => __('Özel ihtiyaçlarınız için özelleştirilmiş çözümler.'),
         'features' => [
-            'Tam Özelleştirme',
-            'Özel Geliştirme',
-            'Dedike Destek',
-            'Tüm Özellikler',
-            'Özel Entegrasyonlar',
-            'Danışmanlık Hizmeti',
-            'Öncelikli Güncellemeler'
+            __('Tam Özelleştirme'),
+            __('Özel Geliştirme'),
+            __('Dedike Destek'),
+            __('Tüm Özellikler'),
+            __('Özel Entegrasyonlar'),
+            __('Danışmanlık Hizmeti'),
+            __('Öncelikli Güncellemeler')
         ],
-        'button_text' => 'İletişime Geç',
+        'button_text' => __('İletişime Geç'),
         'button_link' => '/contact',
         'popular' => false,
         'gradient' => 'from-amber-500 to-orange-600'
@@ -93,6 +93,28 @@ $defaultPackages = [
 ];
 
 $packages = !empty($section['packages']) ? $section['packages'] : $defaultPackages;
+
+// Packages içindeki metinleri çevir
+foreach ($packages as &$package) {
+    if (!empty($package['name'])) {
+        $package['name'] = __($package['name']);
+    }
+    if (!empty($package['description'])) {
+        $package['description'] = __($package['description']);
+    }
+    if (!empty($package['button_text'])) {
+        $package['button_text'] = __($package['button_text']);
+    }
+    if (!empty($package['features']) && is_array($package['features'])) {
+        foreach ($package['features'] as &$feature) {
+            if (is_string($feature)) {
+                $feature = __($feature);
+            }
+        }
+        unset($feature);
+    }
+}
+unset($package);
 
 $sectionId = 'pricing-' . uniqid();
 ?>
@@ -148,7 +170,9 @@ $sectionId = 'pricing-' . uniqid();
                     $description = $package['description'] ?? '';
                     $features = $package['features'] ?? [];
                     $buttonText = $package['button_text'] ?? 'Başla';
-                    $buttonLink = $package['button_link'] ?? '/contact';
+                    $buttonLinkRaw = $package['button_link'] ?? '/contact';
+                    // URL'i dil prefix'i ile oluştur
+                    $buttonLink = function_exists('localized_url') ? localized_url($buttonLinkRaw) : $buttonLinkRaw;
                     $isPopular = !empty($package['popular']);
                     $gradient = $package['gradient'] ?? 'from-blue-500 to-purple-600';
                 ?>
@@ -160,7 +184,7 @@ $sectionId = 'pricing-' . uniqid();
                             <svg class="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20">
                                 <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
                             </svg>
-                            <span>Popüler</span>
+                            <span><?php echo esc_html__('Popüler'); ?></span>
                         </div>
                     </div>
                     <?php endif; ?>
@@ -210,7 +234,7 @@ $sectionId = 'pricing-' . uniqid();
                                 <?php endforeach; ?>
                                 <?php if ($remainingCount > 0): ?>
                                 <li class="text-xs text-slate-500 pl-6">
-                                    +<?php echo $remainingCount; ?> daha fazla özellik
+                                    +<?php echo $remainingCount; ?> <?php echo esc_html__('daha fazla özellik'); ?>
                                 </li>
                                 <?php endif; ?>
                             </ul>
@@ -248,7 +272,9 @@ $sectionId = 'pricing-' . uniqid();
                 $description = $package['description'] ?? '';
                 $features = $package['features'] ?? [];
                 $buttonText = $package['button_text'] ?? 'Başla';
-                $buttonLink = $package['button_link'] ?? '/contact';
+                $buttonLinkRaw = $package['button_link'] ?? '/contact';
+                // URL'i dil prefix'i ile oluştur
+                $buttonLink = function_exists('localized_url') ? localized_url($buttonLinkRaw) : $buttonLinkRaw;
                 $isPopular = !empty($package['popular']);
                 $gradient = $package['gradient'] ?? 'from-blue-500 to-purple-600';
                 $delay = $index * 0.1;
@@ -262,7 +288,7 @@ $sectionId = 'pricing-' . uniqid();
                         <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
                         </svg>
-                        <span>En Popüler</span>
+                        <span><?php echo esc_html__('En Popüler'); ?></span>
                     </div>
                 </div>
                 <?php endif; ?>

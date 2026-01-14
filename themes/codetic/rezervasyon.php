@@ -16,8 +16,8 @@ if (!class_exists('ThemeLoader')) {
 $themeLoader = ThemeLoader::getInstance();
 
 // Page title ve meta
-$pageTitle = $title ?? 'Rezervasyon';
-$pageDescription = $meta_description ?? 'Uçak bileti, otel ve araç kiralama rezervasyonu yapın';
+$pageTitle = $title ?? __('Rezervasyon');
+$pageDescription = $meta_description ?? __('Uçak bileti, otel ve araç kiralama rezervasyonu yapın');
 
 // Layout değişkenleri
 if (!isset($meta_description)) {
@@ -113,19 +113,19 @@ ob_start();
                 <!-- ADIM 1: Uçak Bileti -->
                 <div class="reservation-step-content" data-step="1">
                     <div class="text-center mb-10">
-                        <h2 class="text-white text-2xl md:text-3xl font-bold mb-3">Uçak Bileti Rezervasyonu</h2>
-                        <p class="text-slate-400 text-base md:text-lg">Seyahat detaylarınızı girin</p>
+                        <h2 class="text-white text-2xl md:text-3xl font-bold mb-3"><?php echo __('Uçak Bileti Rezervasyonu'); ?></h2>
+                        <p class="text-slate-400 text-base md:text-lg"><?php echo __('Seyahat detaylarınızı girin'); ?></p>
                     </div>
 
                     <div class="space-y-6">
                         <!-- Nereden -->
                         <div>
                             <label class="block text-white font-medium mb-2">
-                                Nereden <span class="text-red-400">*</span>
+                                <?php echo __('Nereden'); ?> <span class="text-red-400">*</span>
                             </label>
                             <input type="text" 
                                    name="flight_from" 
-                                   placeholder="Kalkış şehri"
+                                   placeholder="<?php echo esc_attr(__('Kalkış şehri')); ?>"
                                    class="w-full px-4 py-3 rounded-xl bg-slate-800/50 border border-slate-700 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                                    required>
                         </div>
@@ -133,11 +133,11 @@ ob_start();
                         <!-- Nereye -->
                         <div>
                             <label class="block text-white font-medium mb-2">
-                                Nereye <span class="text-red-400">*</span>
+                                <?php echo __('Nereye'); ?> <span class="text-red-400">*</span>
                             </label>
                             <input type="text" 
                                    name="flight_to" 
-                                   placeholder="Varış şehri"
+                                   placeholder="<?php echo esc_attr(__('Varış şehri')); ?>"
                                    class="w-full px-4 py-3 rounded-xl bg-slate-800/50 border border-slate-700 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                                    required>
                         </div>
@@ -145,7 +145,7 @@ ob_start();
                         <!-- Gidiş Tarihi -->
                         <div>
                             <label class="block text-white font-medium mb-2">
-                                Gidiş Tarihi <span class="text-red-400">*</span>
+                                <?php echo __('Gidiş Tarihi'); ?> <span class="text-red-400">*</span>
                             </label>
                             <input type="date" 
                                    name="flight_departure_date" 
@@ -156,7 +156,7 @@ ob_start();
                         <!-- Dönüş Tarihi -->
                         <div>
                             <label class="block text-white font-medium mb-2">
-                                Dönüş Tarihi
+                                <?php echo __('Dönüş Tarihi'); ?>
                             </label>
                             <input type="date" 
                                    name="flight_return_date" 
@@ -166,27 +166,27 @@ ob_start();
                         <!-- Yolcu Sayısı -->
                         <div>
                             <label class="block text-white font-medium mb-2">
-                                Yolcu Sayısı <span class="text-red-400">*</span>
+                                <?php echo __('Yolcu Sayısı'); ?> <span class="text-red-400">*</span>
                             </label>
                             <select name="flight_passengers" 
                                     class="w-full px-4 py-3 rounded-xl bg-slate-800/50 border border-slate-700 text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                                     required>
-                                <option value="">Seçiniz...</option>
-                                <option value="1">1 Yolcu</option>
-                                <option value="2">2 Yolcu</option>
-                                <option value="3">3 Yolcu</option>
-                                <option value="4">4 Yolcu</option>
-                                <option value="5">5+ Yolcu</option>
+                                <option value=""><?php echo __('Seçiniz...'); ?></option>
+                                <option value="1"><?php echo __('1 Yolcu'); ?></option>
+                                <option value="2"><?php echo __('2 Yolcu'); ?></option>
+                                <option value="3"><?php echo __('3 Yolcu'); ?></option>
+                                <option value="4"><?php echo __('4 Yolcu'); ?></option>
+                                <option value="5"><?php echo __('5+ Yolcu'); ?></option>
                             </select>
                         </div>
                     </div>
 
                     <!-- Adım Göstergesi ve Buton -->
                     <div class="flex items-center justify-between mt-10 pt-6 border-t border-slate-700/50">
-                        <div class="text-slate-500 text-sm">Adım <span class="text-primary font-bold">1</span> / 3</div>
+                        <div class="text-slate-500 text-sm"><?php echo __('Adım'); ?> <span class="text-primary font-bold">1</span> / 3</div>
                         <button type="button" 
                                 class="reservation-next-btn px-8 py-3 bg-primary hover:bg-primary/90 text-white font-semibold rounded-xl transition-all duration-300 shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30">
-                            Devam Et →
+                            <?php echo __('Devam Et'); ?> →
                         </button>
                     </div>
                 </div>
@@ -194,15 +194,15 @@ ob_start();
                 <!-- ADIM 2: Otel Rezervasyonu -->
                 <div class="reservation-step-content hidden" data-step="2">
                     <div class="text-center mb-10">
-                        <h2 class="text-white text-2xl md:text-3xl font-bold mb-3">Otel Rezervasyonu</h2>
-                        <p class="text-slate-400 text-base md:text-lg">Otel rezervasyonu yapmak ister misiniz?</p>
+                        <h2 class="text-white text-2xl md:text-3xl font-bold mb-3"><?php echo __('Otel Rezervasyonu'); ?></h2>
+                        <p class="text-slate-400 text-base md:text-lg"><?php echo __('Otel rezervasyonu yapmak ister misiniz?'); ?></p>
                     </div>
 
                     <div class="space-y-6">
                         <!-- Otel Lazım mı? -->
                         <div>
                             <label class="block text-white font-medium mb-4 text-center">
-                                Otel rezervasyonu yapmak istiyor musunuz?
+                                <?php echo __('Otel rezervasyonu yapmak istiyor musunuz?'); ?>
                             </label>
                             <div class="grid grid-cols-2 gap-4">
                                 <label class="reservation-hotel-card group relative flex flex-col items-center justify-center p-8 rounded-2xl border-2 border-slate-700 bg-gradient-to-br from-slate-800/50 to-slate-900/50 cursor-pointer transition-all duration-300 hover:border-primary hover:shadow-xl hover:shadow-primary/20">
@@ -212,7 +212,7 @@ ob_start();
                                            class="absolute opacity-0 pointer-events-none reservation-hotel-input"
                                            data-hotel-needed="yes">
                                     <div class="mb-4 text-5xl">🏨</div>
-                                    <h3 class="text-white text-lg font-bold mb-2">Evet</h3>
+                                    <h3 class="text-white text-lg font-bold mb-2"><?php echo __('Evet'); ?></h3>
                                     <div class="absolute top-4 right-4 w-8 h-8 rounded-full bg-primary flex items-center justify-center opacity-0 transition-all duration-300 check-icon">
                                         <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
                                             <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
@@ -242,18 +242,18 @@ ob_start();
                             <!-- Şehir -->
                             <div>
                                 <label class="block text-white font-medium mb-2">
-                                    Otel Şehri <span class="text-red-400">*</span>
+                                    <?php echo __('Otel Şehri'); ?> <span class="text-red-400">*</span>
                                 </label>
                                 <input type="text" 
                                        name="hotel_city" 
-                                       placeholder="Otel şehri"
+                                       placeholder="<?php echo esc_attr(__('Otel şehri')); ?>"
                                        class="w-full px-4 py-3 rounded-xl bg-slate-800/50 border border-slate-700 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
                             </div>
 
                             <!-- Giriş Tarihi -->
                             <div>
                                 <label class="block text-white font-medium mb-2">
-                                    Giriş Tarihi <span class="text-red-400">*</span>
+                                    <?php echo __('Giriş Tarihi'); ?> <span class="text-red-400">*</span>
                                 </label>
                                 <input type="date" 
                                        name="hotel_checkin" 
@@ -263,7 +263,7 @@ ob_start();
                             <!-- Çıkış Tarihi -->
                             <div>
                                 <label class="block text-white font-medium mb-2">
-                                    Çıkış Tarihi <span class="text-red-400">*</span>
+                                    <?php echo __('Çıkış Tarihi'); ?> <span class="text-red-400">*</span>
                                 </label>
                                 <input type="date" 
                                        name="hotel_checkout" 
@@ -273,15 +273,15 @@ ob_start();
                             <!-- Oda Sayısı -->
                             <div>
                                 <label class="block text-white font-medium mb-2">
-                                    Oda Sayısı <span class="text-red-400">*</span>
+                                    <?php echo __('Oda Sayısı'); ?> <span class="text-red-400">*</span>
                                 </label>
                                 <select name="hotel_rooms" 
                                         class="w-full px-4 py-3 rounded-xl bg-slate-800/50 border border-slate-700 text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
-                                    <option value="">Seçiniz...</option>
-                                    <option value="1">1 Oda</option>
-                                    <option value="2">2 Oda</option>
-                                    <option value="3">3 Oda</option>
-                                    <option value="4">4+ Oda</option>
+                                    <option value=""><?php echo __('Seçiniz...'); ?></option>
+                                    <option value="1"><?php echo __('1 Oda'); ?></option>
+                                    <option value="2"><?php echo __('2 Oda'); ?></option>
+                                    <option value="3"><?php echo __('3 Oda'); ?></option>
+                                    <option value="4"><?php echo __('4+ Oda'); ?></option>
                                 </select>
                             </div>
                         </div>
@@ -291,12 +291,12 @@ ob_start();
                     <div class="flex items-center justify-between mt-10 pt-6 border-t border-slate-700/50">
                         <button type="button" 
                                 class="reservation-prev-btn px-8 py-3 bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded-xl transition-all duration-300">
-                            ← Geri
+                            ← <?php echo __('Geri'); ?>
                         </button>
-                        <div class="text-slate-500 text-sm">Adım <span class="text-primary font-bold">2</span> / 3</div>
+                        <div class="text-slate-500 text-sm"><?php echo __('Adım'); ?> <span class="text-primary font-bold">2</span> / 3</div>
                         <button type="button" 
                                 class="reservation-next-btn px-8 py-3 bg-primary hover:bg-primary/90 text-white font-semibold rounded-xl transition-all duration-300 shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30">
-                            Devam Et →
+                            <?php echo __('Devam Et'); ?> →
                         </button>
                     </div>
                 </div>
@@ -304,15 +304,15 @@ ob_start();
                 <!-- ADIM 3: Araç Kiralama -->
                 <div class="reservation-step-content hidden" data-step="3">
                     <div class="text-center mb-10">
-                        <h2 class="text-white text-2xl md:text-3xl font-bold mb-3">Araç Kiralama</h2>
-                        <p class="text-slate-400 text-base md:text-lg">Araç kiralama yapmak ister misiniz?</p>
+                        <h2 class="text-white text-2xl md:text-3xl font-bold mb-3"><?php echo __('Araç Kiralama'); ?></h2>
+                        <p class="text-slate-400 text-base md:text-lg"><?php echo __('Araç kiralama yapmak ister misiniz?'); ?></p>
                     </div>
 
                     <div class="space-y-6">
                         <!-- Araç Lazım mı? -->
                         <div>
                             <label class="block text-white font-medium mb-4 text-center">
-                                Araç kiralama yapmak istiyor musunuz?
+                                <?php echo __('Araç kiralama yapmak istiyor musunuz?'); ?>
                             </label>
                             <div class="grid grid-cols-2 gap-4">
                                 <label class="reservation-car-card group relative flex flex-col items-center justify-center p-8 rounded-2xl border-2 border-slate-700 bg-gradient-to-br from-slate-800/50 to-slate-900/50 cursor-pointer transition-all duration-300 hover:border-primary hover:shadow-xl hover:shadow-primary/20">
@@ -322,7 +322,7 @@ ob_start();
                                            class="absolute opacity-0 pointer-events-none reservation-car-input"
                                            data-car-needed="yes">
                                     <div class="mb-4 text-5xl">🚗</div>
-                                    <h3 class="text-white text-lg font-bold mb-2">Evet</h3>
+                                    <h3 class="text-white text-lg font-bold mb-2"><?php echo __('Evet'); ?></h3>
                                     <div class="absolute top-4 right-4 w-8 h-8 rounded-full bg-primary flex items-center justify-center opacity-0 transition-all duration-300 check-icon">
                                         <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
                                             <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
@@ -352,18 +352,18 @@ ob_start();
                             <!-- Şehir -->
                             <div>
                                 <label class="block text-white font-medium mb-2">
-                                    Araç Alış Şehri <span class="text-red-400">*</span>
+                                    <?php echo __('Araç Alış Şehri'); ?> <span class="text-red-400">*</span>
                                 </label>
                                 <input type="text" 
                                        name="car_pickup_city" 
-                                       placeholder="Araç alış şehri"
+                                       placeholder="<?php echo esc_attr(__('Araç alış şehri')); ?>"
                                        class="w-full px-4 py-3 rounded-xl bg-slate-800/50 border border-slate-700 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
                             </div>
 
                             <!-- Alış Tarihi -->
                             <div>
                                 <label class="block text-white font-medium mb-2">
-                                    Alış Tarihi <span class="text-red-400">*</span>
+                                    <?php echo __('Alış Tarihi'); ?> <span class="text-red-400">*</span>
                                 </label>
                                 <input type="date" 
                                        name="car_pickup_date" 
@@ -373,7 +373,7 @@ ob_start();
                             <!-- Teslim Tarihi -->
                             <div>
                                 <label class="block text-white font-medium mb-2">
-                                    Teslim Tarihi <span class="text-red-400">*</span>
+                                    <?php echo __('Teslim Tarihi'); ?> <span class="text-red-400">*</span>
                                 </label>
                                 <input type="date" 
                                        name="car_return_date" 
@@ -383,37 +383,37 @@ ob_start();
 
                         <!-- İletişim Bilgileri -->
                         <div class="pt-6 border-t border-slate-700/50 space-y-6">
-                            <h3 class="text-white text-xl font-bold mb-4">İletişim Bilgileri</h3>
+                            <h3 class="text-white text-xl font-bold mb-4"><?php echo __('İletişim Bilgileri'); ?></h3>
                             
                             <div>
                                 <label class="block text-white font-medium mb-2">
-                                    Ad Soyad <span class="text-red-400">*</span>
+                                    <?php echo __('Ad Soyad'); ?> <span class="text-red-400">*</span>
                                 </label>
                                 <input type="text" 
                                        name="contact_name" 
-                                       placeholder="Adınız ve soyadınız"
+                                       placeholder="<?php echo esc_attr(__('Adınız ve soyadınız')); ?>"
                                        class="w-full px-4 py-3 rounded-xl bg-slate-800/50 border border-slate-700 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                                        required>
                             </div>
 
                             <div>
                                 <label class="block text-white font-medium mb-2">
-                                    E-posta <span class="text-red-400">*</span>
+                                    <?php echo __('E-posta'); ?> <span class="text-red-400">*</span>
                                 </label>
                                 <input type="email" 
                                        name="contact_email" 
-                                       placeholder="E-posta adresiniz"
+                                       placeholder="<?php echo esc_attr(__('E-posta adresiniz')); ?>"
                                        class="w-full px-4 py-3 rounded-xl bg-slate-800/50 border border-slate-700 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                                        required>
                             </div>
 
                             <div>
                                 <label class="block text-white font-medium mb-2">
-                                    Telefon <span class="text-red-400">*</span>
+                                    <?php echo __('Telefon'); ?> <span class="text-red-400">*</span>
                                 </label>
                                 <input type="tel" 
                                        name="contact_phone" 
-                                       placeholder="Telefon numaranız"
+                                       placeholder="<?php echo esc_attr(__('Telefon numaranız')); ?>"
                                        class="w-full px-4 py-3 rounded-xl bg-slate-800/50 border border-slate-700 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                                        required>
                             </div>
@@ -424,12 +424,12 @@ ob_start();
                     <div class="flex items-center justify-between mt-10 pt-6 border-t border-slate-700/50">
                         <button type="button" 
                                 class="reservation-prev-btn px-8 py-3 bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded-xl transition-all duration-300">
-                            ← Geri
+                            ← <?php echo __('Geri'); ?>
                         </button>
-                        <div class="text-slate-500 text-sm">Adım <span class="text-primary font-bold">3</span> / 3</div>
+                        <div class="text-slate-500 text-sm"><?php echo __('Adım'); ?> <span class="text-primary font-bold">3</span> / 3</div>
                         <button type="submit" 
                                 class="px-8 py-3 bg-primary hover:bg-primary/90 text-white font-semibold rounded-xl transition-all duration-300 shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30">
-                            Rezervasyonu Tamamla ✓
+                            <?php echo __('Rezervasyonu Tamamla'); ?> ✓
                         </button>
                     </div>
                 </div>
@@ -572,7 +572,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         if (!isValid) {
-            alert('Lütfen tüm zorunlu alanları doldurun.');
+            alert('<?php echo esc_js(__('Lütfen tüm zorunlu alanları doldurun.')); ?>');
         }
 
         return isValid;

@@ -7,46 +7,57 @@
 $section = $section ?? [];
 $settings = $section['settings'] ?? [];
 
-// Section ayarları
-$sectionTitle = $section['title'] ?? 'Özelliklerimiz';
-$sectionSubtitle = $section['subtitle'] ?? 'Yenilikçi çözümlerimizle işletmenizi dijital dünyada bir adım öne taşıyın.';
-$badge = $settings['badge'] ?? 'Neden Biz?';
+// Section ayarları - __() helper fonksiyonu kullanılıyor
+$sectionTitle = __($section['title'] ?? 'Özelliklerimiz');
+$sectionSubtitle = __($section['subtitle'] ?? 'Yenilikçi çözümlerimizle işletmenizi dijital dünyada bir adım öne taşıyın.');
+$badge = __($settings['badge'] ?? 'Neden Biz?');
 
 // Grid items - varsayılan değerler
 $defaultItems = [
     [
         'icon' => 'rocket',
-        'title' => 'Hızlı Geliştirme',
-        'description' => 'Modern araçlar ve metodolojilerle projelerinizi hızla hayata geçiriyoruz. Agile yaklaşımımızla sürekli değer üretiyoruz.',
+        'title' => __('Hızlı Geliştirme'),
+        'description' => __('Modern araçlar ve metodolojilerle projelerinizi hızla hayata geçiriyoruz. Agile yaklaşımımızla sürekli değer üretiyoruz.'),
         'gradient' => 'from-indigo-500 via-purple-500 to-pink-500'
     ],
     [
         'icon' => 'shield',
-        'title' => 'Güvenli Altyapı',
-        'description' => 'En güncel güvenlik standartları ve best practice\'ler ile verilerinizi koruyoruz. SSL, şifreleme ve düzenli güvenlik taramaları.',
+        'title' => __('Güvenli Altyapı'),
+        'description' => __('En güncel güvenlik standartları ve best practice\'ler ile verilerinizi koruyoruz. SSL, şifreleme ve düzenli güvenlik taramaları.'),
         'gradient' => 'from-emerald-400 via-teal-500 to-cyan-500'
     ],
     [
         'icon' => 'code',
-        'title' => 'Temiz Kod',
-        'description' => 'Okunabilir, sürdürülebilir ve ölçeklenebilir kod yazıyoruz. SOLID prensipleri ve modern mimari desenler kullanıyoruz.',
+        'title' => __('Temiz Kod'),
+        'description' => __('Okunabilir, sürdürülebilir ve ölçeklenebilir kod yazıyoruz. SOLID prensipleri ve modern mimari desenler kullanıyoruz.'),
         'gradient' => 'from-blue-400 via-cyan-500 to-blue-600'
     ],
     [
         'icon' => 'zap',
-        'title' => 'Yüksek Performans',
-        'description' => 'Optimize edilmiş kod, CDN entegrasyonu ve caching stratejileri ile maksimum hız sağlıyoruz.',
+        'title' => __('Yüksek Performans'),
+        'description' => __('Optimize edilmiş kod, CDN entegrasyonu ve caching stratejileri ile maksimum hız sağlıyoruz.'),
         'gradient' => 'from-amber-400 via-orange-500 to-red-500'
     ],
     [
         'icon' => 'users',
-        'title' => '7/24 Destek',
-        'description' => 'Uzman ekibimiz her zaman yanınızda. Teknik destek, danışmanlık ve eğitim hizmetleri sunuyoruz.',
+        'title' => __('7/24 Destek'),
+        'description' => __('Uzman ekibimiz her zaman yanınızda. Teknik destek, danışmanlık ve eğitim hizmetleri sunuyoruz.'),
         'gradient' => 'from-pink-400 via-rose-500 to-fuchsia-600'
     ]
 ];
 
 $items = !empty($section['items']) ? $section['items'] : $defaultItems;
+
+// Items içindeki title ve description'ları çevir
+foreach ($items as &$item) {
+    if (!empty($item['title'])) {
+        $item['title'] = __($item['title']);
+    }
+    if (!empty($item['description'])) {
+        $item['description'] = __($item['description']);
+    }
+}
+unset($item);
 
 // Icon mapping - Daha fazla icon
 $iconMap = [

@@ -115,62 +115,9 @@ $renderer->startSection('content');
 </section>
 
 <?php 
-// Hero Section
-$heroData = getSectionData('hero', $sectionsMap, $defaultSections);
-if (isSectionActive('hero', $sectionsMap)):
+// Hero Section - Tema dosyasından render ediliyor (themes/codetic/home.php)
+// Burada duplicate render etmiyoruz, tema dosyası zaten hero'yu render ediyor
 ?>
-<section class="relative min-h-[600px] lg:min-h-[700px] overflow-hidden bg-gradient-to-br from-slate-50 via-purple-50 to-emerald-50">
-    <!-- Decorative Elements -->
-    <div class="absolute top-20 left-10 w-32 h-32 border-2 border-purple-200 rounded-full opacity-50"></div>
-    <div class="absolute bottom-32 left-1/4 text-purple-200 text-4xl opacity-30">+</div>
-    <div class="absolute top-1/3 right-1/4 w-16 h-16 bg-emerald-100 rounded-full blur-xl opacity-60"></div>
-    <div class="absolute bottom-1/4 right-10 w-24 h-24 bg-purple-100 rounded-full blur-xl opacity-60"></div>
-    
-    <div class="relative max-w-7xl mx-auto px-6 lg:px-8 pt-20 lg:pt-32 pb-20">
-        <div class="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-            <!-- Left Content -->
-            <div class="relative z-10">
-                <h1 class="text-4xl lg:text-5xl xl:text-6xl font-bold text-gray-900 leading-tight mb-6">
-                    <?php echo htmlspecialchars($heroData['title']); ?>
-                </h1>
-                <p class="text-lg lg:text-xl text-gray-600 mb-8 leading-relaxed max-w-lg">
-                    <?php echo htmlspecialchars($heroData['subtitle']); ?>
-                </p>
-                <div class="flex flex-wrap gap-4">
-                    <?php if (!empty($heroData['settings']['button_text'])): ?>
-                    <a href="<?php echo htmlspecialchars($heroData['settings']['button_link'] ?? '/contact'); ?>" class="inline-flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white font-semibold px-8 py-4 rounded-full transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl">
-                        <?php echo htmlspecialchars($heroData['settings']['button_text']); ?>
-                        <span class="material-symbols-outlined text-xl">arrow_forward</span>
-                    </a>
-                    <?php endif; ?>
-                    <?php if (!empty($heroData['settings']['secondary_button_text'])): ?>
-                    <a href="<?php echo htmlspecialchars($heroData['settings']['secondary_button_link'] ?? '#features'); ?>" class="inline-flex items-center gap-2 border-2 border-gray-300 hover:border-purple-600 text-gray-700 hover:text-purple-600 font-semibold px-8 py-4 rounded-full transition-all duration-200">
-                        <?php echo htmlspecialchars($heroData['settings']['secondary_button_text']); ?>
-                    </a>
-                    <?php endif; ?>
-                </div>
-            </div>
-            
-            <!-- Right Content with Images -->
-            <div class="relative lg:h-[500px] flex items-center justify-center">
-                <div class="relative w-64 h-64 lg:w-80 lg:h-80 rounded-full overflow-hidden border-8 border-white shadow-2xl z-10 bg-gradient-to-br from-purple-400 to-emerald-400">
-                    <div class="w-full h-full flex items-center justify-center">
-                        <span class="material-symbols-outlined text-white" style="font-size: 8rem;">rocket_launch</span>
-                    </div>
-                </div>
-                
-                <!-- Floating Badge -->
-                <div class="absolute top-10 right-0 lg:right-10 w-32 h-32 bg-white rounded-2xl shadow-xl flex items-center justify-center animate-bounce" style="animation-duration: 3s;">
-                    <div class="text-center">
-                        <div class="text-3xl font-bold text-purple-600">10+</div>
-                        <div class="text-xs text-gray-500">Yıl Deneyim</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-<?php endif; ?>
 
 <?php 
 // Features Section

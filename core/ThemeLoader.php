@@ -290,14 +290,239 @@ class ThemeLoader {
     public function renderSection(array $section): string {
         $componentName = $section['section_component'] ?? $section['section_id'];
         
+        // Çeviri filter'larını uygula
+        $title = $section['title'] ?? '';
+        $subtitle = $section['subtitle'] ?? '';
+        $content = $section['content'] ?? '';
+        $description = $section['description'] ?? '';
+        $settings = $section['settings'] ?? [];
+        $items = $section['items'] ?? [];
+        $tabs = $section['tabs'] ?? [];
+        $packages = $section['packages'] ?? [];
+        $features = $section['features'] ?? [];
+        
+        if (function_exists('apply_filters')) {
+            if (!empty($title)) {
+                $title = apply_filters('page_title', $title);
+            }
+            if (!empty($subtitle)) {
+                $subtitle = apply_filters('page_title', $subtitle);
+            }
+            if (!empty($content)) {
+                $content = apply_filters('page_content', $content);
+            }
+            if (!empty($description)) {
+                $description = apply_filters('page_content', $description);
+            }
+            
+            // Settings içindeki metin alanlarını çevir
+            if (is_array($settings)) {
+                $settings = $this->translateSettings($settings);
+            }
+            
+            // Items içindeki metin alanlarını çevir (glowing-features vb.)
+            if (is_array($items)) {
+                $items = $this->translateItems($items);
+            }
+            
+            // Tabs içindeki metin alanlarını çevir (feature-tabs için)
+            if (is_array($tabs)) {
+                $tabs = $this->translateItems($tabs);
+            }
+            
+            // Packages içindeki metin alanlarını çevir (pricing için)
+            if (is_array($packages)) {
+                $packages = $this->translateItems($packages);
+            }
+            
+            // Features içindeki metin alanlarını çevir (dashboard-showcase için)
+            if (is_array($features)) {
+                foreach ($features as &$feature) {
+                    if (is_string($feature) && !empty($feature) && strlen($feature) > 2) {
+                        $feature = apply_filters('page_title', $feature);
+                    }
+                }
+                unset($feature);
+            }
+        }
+        
+        // Section'ı güncellenmiş değerlerle güncelle
+        $section['title'] = $title;
+        $section['subtitle'] = $subtitle;
+        $section['content'] = $content;
+        $section['description'] = $description;
+        $section['settings'] = $settings;
+        $section['items'] = $items;
+        $section['tabs'] = $tabs;
+        $section['packages'] = $packages;
+        $section['features'] = $features;
+        
         return $this->renderComponent($componentName, [
             'section' => $section,
-            'title' => $section['title'] ?? '',
-            'subtitle' => $section['subtitle'] ?? '',
-            'content' => $section['content'] ?? '',
-            'settings' => $section['settings'] ?? [],
-            'items' => $section['items'] ?? []
+            'title' => $title,
+            'subtitle' => $subtitle,
+            'content' => $content,
+            'description' => $description,
+            'settings' => $settings,
+            'items' => $items,
+            'tabs' => $tabs,
+            'packages' => $packages,
+            'features' => $features
         ]);
+    }
+    
+    /**
+     * Settings array'indeki metin alanlarını çevir
+     * Tüm section component'lerinde kullanılan metin alanlarını kapsar
+     */
+    private function translateSettings(array $settings): array {
+        if (!function_exists('apply_filters')) {
+            return $settings;
+        }
+        
+        // Çevirilecek metin key'leri - TÜM SECTION COMPONENT'LERİNDEN
+        $textKeys = [
+            // Genel
+            'title', 'subtitle', 'description', 'content', 'text', 'name', 'label',
+            'heading', 'subheading', 'badge', 'caption', 'message',
+            // Butonlar
+            'button_text', 'buttonText', 'secondary_button_text', 'top_button_text', 
+            'link_text', 'submit_button_text', 'back_text',
+            // Form alanları
+            'placeholder', 'help_text', 'success_message', 'error_message',
+            // Hero özel
+            'title_prefix',
+            // Tabs özel
+            'imageAlt',
+            // Footer
+            'copyright_text', 'copyright_company', 'copyright_custom', 'back_to_top_text'
+        ];
+        
+        // Çevirilmeyecek key'ler
+        // NOT: animated_words artık çevriliyor (virgülle ayrılmış kelimeler)
+        $noTranslateKeys = [
+            'icon', 'image', 'link', 'url', 'href', 'src', 'color', 'gradient',
+            'style', 'class', 'id', 'enabled', 'active', 'visible', 'show',
+            'button_link', 'secondary_button_link', 'top_button_link',
+            'period', 'price', 'popular', // 'value' artık çevriliyor (uzun metinler için)
+            'font', 'size', 'width', 'height', 'padding', 'margin',
+            'type', 'format', 'default', 'options', 'required',
+            'top_button_style', 'top_button_icon', 'reverse_layout'
+        ];
+        
+        foreach ($settings as $key => $value) {
+            // Özel durum: animated_words - virgülle ayrılmış kelimeleri çevir
+            if ($key === 'animated_words' && is_string($value) && !empty($value)) {
+                $words = array_map('trim', explode(',', $value));
+                $translatedWords = array_map(function($word) {
+                    if (function_exists('apply_filters') && !empty($word) && strlen($word) > 2) {
+                        return apply_filters('page_title', $word);
+                    }
+                    return $word;
+                }, $words);
+                $settings[$key] = implode(',', $translatedWords);
+                continue;
+            }
+            
+            // Çevirilmeyecek key'leri atla
+            $shouldSkip = false;
+            foreach ($noTranslateKeys as $noTransKey) {
+                if (strpos($key, $noTransKey) !== false || $key === $noTransKey) {
+                    $shouldSkip = true;
+                    break;
+                }
+            }
+            if ($shouldSkip) continue;
+            
+            if (is_string($value) && !empty($value) && strlen($value) > 2) {
+                // Metin key'i mi kontrol et
+                $isTextKey = false;
+                foreach ($textKeys as $textKey) {
+                    if ($key === $textKey || strpos($key, $textKey) !== false ||
+                        strpos($key, 'Text') !== false || strpos($key, '_text') !== false ||
+                        strpos($key, 'title') !== false || strpos($key, 'description') !== false ||
+                        strpos($key, 'label') !== false || strpos($key, 'badge') !== false ||
+                        strpos($key, 'heading') !== false || strpos($key, 'subtitle') !== false) {
+                        $isTextKey = true;
+                        break;
+                    }
+                }
+                
+                if ($isTextKey) {
+                    if (strlen($value) > 100) {
+                        $settings[$key] = apply_filters('page_content', $value);
+                    } else {
+                        $settings[$key] = apply_filters('page_title', $value);
+                    }
+                }
+            } elseif (is_array($value)) {
+                // Nested array için recursive çağrı
+                $settings[$key] = $this->translateSettings($value);
+            }
+        }
+        
+        return $settings;
+    }
+    
+    /**
+     * Items array'indeki metin alanlarını çevir
+     * Pricing packages, feature tabs, glowing features items vb. için
+     */
+    private function translateItems(array $items): array {
+        if (!function_exists('apply_filters')) {
+            return $items;
+        }
+        
+        foreach ($items as &$item) {
+            if (is_array($item)) {
+                // Her item için settings çevirisini kullan
+                $item = $this->translateSettings($item);
+                
+                // Features array'i varsa (pricing packages için)
+                if (isset($item['features']) && is_array($item['features'])) {
+                    foreach ($item['features'] as &$feature) {
+                        if (is_string($feature) && !empty($feature) && strlen($feature) > 2) {
+                            $feature = apply_filters('page_content', $feature);
+                        }
+                    }
+                    unset($feature);
+                }
+                
+                // Content objesi varsa (feature tabs için)
+                if (isset($item['content']) && is_array($item['content'])) {
+                    $item['content'] = $this->translateSettings($item['content']);
+                }
+                
+                // Options array'i varsa (form fields için)
+                if (isset($item['options']) && is_array($item['options'])) {
+                    foreach ($item['options'] as &$option) {
+                        if (is_array($option)) {
+                            if (!empty($option['label']) && is_string($option['label'])) {
+                                $option['label'] = apply_filters('page_title', $option['label']);
+                            }
+                        } elseif (is_string($option) && !empty($option) && strlen($option) > 2) {
+                            $option = apply_filters('page_title', $option);
+                        }
+                    }
+                    unset($option);
+                }
+                
+                // Tabs array'i varsa (feature tabs için)
+                if (isset($item['tabs']) && is_array($item['tabs'])) {
+                    $item['tabs'] = $this->translateItems($item['tabs']);
+                }
+                
+                // Packages array'i varsa (pricing için)
+                if (isset($item['packages']) && is_array($item['packages'])) {
+                    $item['packages'] = $this->translateItems($item['packages']);
+                }
+            } elseif (is_string($item) && !empty($item) && strlen($item) > 2) {
+                $item = apply_filters('page_title', $item);
+            }
+        }
+        unset($item);
+        
+        return $items;
     }
     
     // ==========================================
@@ -306,13 +531,15 @@ class ThemeLoader {
     
     /**
      * Tema asset URL'si
+     * Asset URL'leri (CSS, JS, images) her zaman root'tan servis edilir, dil prefix'i olmadan
      */
     public function getAssetUrl(string $path): string {
         if (!$this->activeTheme) {
             return '';
         }
         
-        $baseUrl = $this->getSiteUrl();
+        // Asset URL'leri için dil prefix'i olmadan base URL al
+        $baseUrl = $this->getSiteUrl(false);
         return $baseUrl . 'themes/' . $this->activeTheme['slug'] . '/assets/' . ltrim($path, '/');
     }
     
@@ -339,8 +566,10 @@ class ThemeLoader {
     
     /**
      * Site URL helper
+     * 
+     * @param bool $includeLangPrefix Asset URL'leri için false, sayfa URL'leri için true
      */
-    private function getSiteUrl(): string {
+    private function getSiteUrl(bool $includeLangPrefix = true): string {
         $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https://' : 'http://';
         $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
         $scriptName = $_SERVER['SCRIPT_NAME'] ?? '/index.php';
@@ -348,7 +577,45 @@ class ThemeLoader {
         if (strpos($scriptName, 'public/') !== false) {
             $base = str_replace('public/', '', $base);
         }
-        return $protocol . $host . $base;
+        
+        // Translation modülü aktifse ve dil prefix'i isteniyorsa ekle
+        // Asset URL'leri (CSS, JS, images) için dil prefix'i eklenmez
+        $langPrefix = '';
+        if ($includeLangPrefix && class_exists('ModuleLoader')) {
+            $moduleLoader = ModuleLoader::getInstance();
+            // Modülün aktif olup olmadığını kontrol et
+            $translationModule = $moduleLoader->getModule('translation');
+            if ($translationModule && ($translationModule['is_active'] ?? false)) {
+                $translationController = $moduleLoader->getModuleController('translation');
+                if ($translationController) {
+                    $currentLanguage = $translationController->getCurrentLanguage();
+                    $defaultLanguage = get_module_setting('translation', 'default_language', 'tr');
+                    if ($currentLanguage !== $defaultLanguage) {
+                        $langPrefix = '/' . $currentLanguage;
+                    }
+                }
+            }
+        }
+        
+        return $protocol . $host . $base . $langPrefix;
+    }
+    
+    /**
+     * URL'i dil prefix'i ile döndür
+     * Component'lerde link oluştururken kullanılır
+     * 
+     * @param string $path URL path'i (örn: '/contact', '/blog')
+     * @param string|null $lang Hedef dil kodu (null ise mevcut dil kullanılır)
+     * @return string Dil prefix'li URL
+     */
+    public function getLocalizedUrl(string $path = '', ?string $lang = null): string {
+        // localized_url fonksiyonu varsa kullan
+        if (function_exists('localized_url')) {
+            return localized_url($path, $lang);
+        }
+        
+        // Fallback: getSiteUrl kullan
+        return $this->getSiteUrl(true) . ($path ? '/' . ltrim($path, '/') : '');
     }
     
     // ==========================================
@@ -358,7 +625,12 @@ class ThemeLoader {
     /**
      * CSS değişkenlerini oluştur
      */
-    private function buildCssVariables(): void {
+    private function buildCssVariables($forceReload = false): void {
+        // Ayarları yeniden yükle (güncel değerleri almak için)
+        if ($forceReload && $this->activeTheme && $this->activeTheme['slug']) {
+            $this->themeSettings = $this->themeManager->getThemeSettings($this->activeTheme['slug']);
+        }
+        
         $this->cssVariables = [];
         
         // Renk değişkenleri
@@ -392,6 +664,9 @@ class ThemeLoader {
      * CSS değişkenlerini string olarak getir
      */
     public function getCssVariables(): string {
+        // Her çağrıda ayarları yeniden yükle (güncel font/renk değerleri için)
+        $this->buildCssVariables(true);
+        
         if (empty($this->cssVariables)) {
             return '';
         }
@@ -457,21 +732,103 @@ class ThemeLoader {
     // ==========================================
     
     /**
+     * Tema ayarlarını yeniden yükle (customize'dan sonra kullanılır)
+     */
+    public function refreshSettings(): void {
+        if ($this->activeTheme) {
+            $this->themeSettings = $this->themeManager->getThemeSettings($this->activeTheme['slug']);
+            $this->buildCssVariables();
+        }
+    }
+    
+    /**
      * Tema ayarını getir
      */
     public function getSetting(string $key, $default = null, ?string $group = null) {
-        if ($group && isset($this->themeSettings[$group][$key])) {
-            return $this->themeSettings[$group][$key]['value'] ?? $default;
+        // Her çağrıda güncel ayarları kontrol et (cache sorunlarını önlemek için)
+        // Ancak performans için sadece aktif temayı kontrol et
+        if ($this->activeTheme) {
+            // Eğer ayar bulunamazsa, veritabanından direkt oku
+            $value = null;
+            
+            if ($group && isset($this->themeSettings[$group][$key])) {
+                $value = $this->themeSettings[$group][$key]['value'] ?? null;
+            } else {
+                // Tüm grupları tara
+                foreach ($this->themeSettings as $g => $settings) {
+                    if (isset($settings[$key])) {
+                        $value = $settings[$key]['value'] ?? null;
+                        break;
+                    }
+                }
+            }
+            
+            // Eğer hala bulunamadıysa, veritabanından direkt oku
+            if ($value === null) {
+                $value = $this->themeManager->getThemeOption($key, null, $group);
+            }
+            
+            if ($value === null) {
+                $value = $default;
+            }
+        } else {
+            $value = $default;
         }
         
-        // Tüm grupları tara
-        foreach ($this->themeSettings as $g => $settings) {
-            if (isset($settings[$key])) {
-                return $settings[$key]['value'] ?? $default;
+        // Çevirilmemesi gereken ayarlar (URL'ler, teknik değerler, virgüllü listeler vb.)
+        // NOT: animated_words artık çevriliyor (virgülle ayrılmış kelimeler)
+        $noTranslateKeys = [
+            'button_link', 'secondary_button_link', 'top_button_link',
+            'link', 'url', 'href', 'src', 'image', 'logo', 'favicon', 'icon',
+            'color', 'font', 'size', 'width', 'height', 'padding', 'margin',
+            'style', 'class', 'id', 'enabled', 'active', 'visible', 'show',
+            'top_button_style', 'top_button_icon', 'reverse_layout', 'gradient',
+            'period', 'price', 'popular' // Fiyatlandırma için (features çevriliyor)
+        ];
+        
+        // Key çevirilmemesi gereken listede mi kontrol et
+        $shouldTranslate = true;
+        foreach ($noTranslateKeys as $noTransKey) {
+            if (strpos($key, $noTransKey) !== false || $key === $noTransKey) {
+                $shouldTranslate = false;
+                break;
             }
         }
         
-        return $default;
+        // Çeviri filter'ını uygula (sadece çevirilmesi gereken string değerler için)
+        // filter_title kullanarak çeviri modülünün veritabanından çeviriyi almasını sağla
+        // NOT: strlen($value) > 2 kontrolü kaldırıldı - tüm metinler çevrilmeli
+        if ($shouldTranslate && function_exists('apply_filters') && is_string($value) && !empty($value) && strlen($value) > 1) {
+            // Kısa veya uzun metne göre uygun filter kullan
+            $originalValue = $value;
+            
+            // Filter'ların kayıtlı olup olmadığını kontrol et
+            $hasTitleFilter = function_exists('has_filter') ? has_filter('page_title') : false;
+            $hasContentFilter = function_exists('has_filter') ? has_filter('page_content') : false;
+            
+            if ($hasTitleFilter || $hasContentFilter) {
+                // animated_words için özel işlem: virgülle ayrılmış kelimeleri ayrı ayrı çevir
+                if ($key === 'animated_words' && strpos($value, ',') !== false) {
+                    $words = array_map('trim', explode(',', $value));
+                    $translatedWords = [];
+                    foreach ($words as $word) {
+                        if (!empty($word)) {
+                            $translatedWord = apply_filters('page_title', $word);
+                            $translatedWords[] = $translatedWord;
+                        }
+                    }
+                    $value = implode(',', $translatedWords);
+                } else {
+                    if (strlen($value) > 100) {
+                        $value = apply_filters('page_content', $value);
+                    } else {
+                        $value = apply_filters('page_title', $value);
+                    }
+                }
+            }
+        }
+        
+        return $value;
     }
     
     /**
@@ -482,9 +839,29 @@ class ThemeLoader {
     }
     
     /**
+     * Ana rengi getir
+     */
+    public function getPrimaryColor(): ?string {
+        $color = $this->getColor('primary', '#137fec');
+        return !empty($color) ? $color : null;
+    }
+    
+    /**
+     * İkincil rengi getir
+     */
+    public function getSecondaryColor(): ?string {
+        $color = $this->getColor('secondary', '#6366f1');
+        return !empty($color) ? $color : null;
+    }
+    
+    /**
      * Font ayarını getir
      */
-    public function getFont(string $key, string $default = 'Inter'): string {
+    public function getFont(string $key, string $default = 'Zalando Sans SemiExpanded'): string {
+        // Ayarları yeniden yükle (güncel font değerleri için)
+        if ($this->activeTheme && $this->activeTheme['slug']) {
+            $this->themeSettings = $this->themeManager->getThemeSettings($this->activeTheme['slug']);
+        }
         return $this->getSetting($key, $default, 'fonts');
     }
     
@@ -511,12 +888,12 @@ class ThemeLoader {
             return $this->previewSettings['branding'][$key];
         }
         
-        // Sonra tema ayarlarından kontrol et
-        $value = $this->getSetting($key, null, 'branding');
+        // Önce aktif temanın ayarlarından al (ThemeManager üzerinden - doğru tema ID ile)
+        $value = $this->themeManager->getThemeOption($key, null, 'branding');
         
-        // Tema ayarlarında yoksa ThemeManager'dan al
+        // Tema ayarlarında yoksa themeSettings'den kontrol et
         if (empty($value)) {
-            $value = $this->themeManager->getThemeOption($key, null, 'branding');
+            $value = $this->getSetting($key, null, 'branding');
         }
         
         // Hala yoksa global ayarlardan al
@@ -629,8 +1006,11 @@ class ThemeLoader {
      * Sayfa section'larını getir (veritabanından + önizleme)
      */
     public function getPageSections(string $pageType): array {
-        // Veritabanından section'ları al
-        $dbSections = $this->themeManager->getPageSections($pageType);
+        // Aktif temanın ID'sini al
+        $themeId = $this->activeTheme['id'] ?? null;
+        
+        // Veritabanından section'ları al (theme_id ile)
+        $dbSections = $this->themeManager->getPageSections($pageType, $themeId);
         
         // Önizleme sections yoksa direkt döndür
         if (empty($this->previewSections)) {

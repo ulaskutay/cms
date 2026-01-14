@@ -51,14 +51,17 @@ class Post extends Model {
     public function getByCategory($categoryId, $limit = null) {
         $sql = "SELECT p.*, 
                        u.username as author_name, 
-                       c.name as category_name
+                       c.name as category_name,
+                       c.slug as category_slug
                 FROM `{$this->table}` p
                 LEFT JOIN `users` u ON p.author_id = u.id
                 LEFT JOIN `post_categories` c ON p.category_id = c.id
                 WHERE (p.type = 'post' OR p.type IS NULL)
                 AND p.category_id = ? 
                 AND p.status = 'published'
-                ORDER BY p.published_at DESC";
+                AND p.visibility = 'public'
+                AND (p.published_at IS NULL OR p.published_at <= NOW())
+                ORDER BY p.published_at DESC, p.created_at DESC";
         
         if ($limit) {
             $sql .= " LIMIT {$limit}";

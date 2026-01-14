@@ -7,10 +7,17 @@
 $section = $section ?? [];
 $settings = $section['settings'] ?? [];
 
-// Section ayarları
-$sectionTitle = $section['title'] ?? 'Sektöre göre geliştirilebilir yapı';
-$sectionDescription = $section['description'] ?? 'Her sektöre uygun olacak şekilde şekillendirilebilir, yapay zeka destekli, ölçeklenebilir web tasarım projeleri';
+// Section ayarları - __() helper fonksiyonu kullanılıyor
+$sectionTitle = __($section['title'] ?? 'Sektöre göre geliştirilebilir yapı');
+$sectionDescription = __($section['description'] ?? 'Her sektöre uygun olacak şekilde şekillendirilebilir, yapay zeka destekli, ölçeklenebilir web tasarım projeleri');
 $reverseLayout = isset($settings['reverse_layout']) ? (bool)$settings['reverse_layout'] : false;
+
+// Feature points için çeviri
+$featurePoints = [
+    __('Özelleştirilebilir yapı'),
+    __('Yapay zeka destekli'),
+    __('Ölçeklenebilir mimari'),
+];
 
 $sectionId = 'section-mockup-' . uniqid();
 ?>
@@ -80,18 +87,20 @@ $sectionId = 'section-mockup-' . uniqid();
 
                 <!-- Feature Points -->
                 <div class="flex flex-col gap-3 mt-4">
+                    <?php 
+                    $gradients = [
+                        'from-blue-400 to-cyan-400',
+                        'from-violet-400 to-purple-400',
+                        'from-emerald-400 to-teal-400'
+                    ];
+                    foreach ($featurePoints as $index => $feature): 
+                        $gradient = $gradients[$index % count($gradients)];
+                    ?>
                     <div class="flex items-center gap-3 text-slate-300">
-                        <div class="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-blue-400 to-cyan-400"></div>
-                        <span class="text-sm md:text-base">Özelleştirilebilir yapı</span>
+                        <div class="w-1.5 h-1.5 rounded-full bg-gradient-to-r <?php echo $gradient; ?>"></div>
+                        <span class="text-sm md:text-base"><?php echo esc_html($feature); ?></span>
                     </div>
-                    <div class="flex items-center gap-3 text-slate-300">
-                        <div class="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-violet-400 to-purple-400"></div>
-                        <span class="text-sm md:text-base">Yapay zeka destekli</span>
-                    </div>
-                    <div class="flex items-center gap-3 text-slate-300">
-                        <div class="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-emerald-400 to-teal-400"></div>
-                        <span class="text-sm md:text-base">Ölçeklenebilir mimari</span>
-                    </div>
+                    <?php endforeach; ?>
                 </div>
             </div>
 

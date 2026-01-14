@@ -7,8 +7,14 @@
 // Section verilerini veritabanından al
 $sections = $themeLoader->getPageSections('home');
 $sectionsMap = [];
+$seenSectionIds = []; // Duplicate kontrolü için
 foreach ($sections as $s) {
-    $sectionsMap[$s['section_id']] = $s;
+    $sectionId = $s['section_id'] ?? '';
+    // Sadece benzersiz section_id'leri ekle (duplicate'leri önle)
+    if (!empty($sectionId) && !isset($seenSectionIds[$sectionId])) {
+        $sectionsMap[$sectionId] = $s;
+        $seenSectionIds[$sectionId] = true;
+    }
 }
 
 // Varsayılan section verileri
@@ -103,21 +109,30 @@ $sectionOrder = ['hero', 'features', 'about', 'testimonials', 'cta'];
 // Veritabanında sıralama varsa onu kullan
 if (!empty($sections)) {
     $orderedSections = [];
+    $seenInOrder = []; // Duplicate kontrolü için
     foreach ($sections as $s) {
-        if (isset($defaultSections[$s['section_id']])) {
-            $orderedSections[] = $s['section_id'];
+        $sectionId = $s['section_id'] ?? '';
+        if (!empty($sectionId) && isset($defaultSections[$sectionId]) && !isset($seenInOrder[$sectionId])) {
+            $orderedSections[] = $sectionId;
+            $seenInOrder[$sectionId] = true;
         }
     }
-    // Eksik olanları ekle
+    // Eksik olanları ekle (duplicate kontrolü ile)
     foreach ($sectionOrder as $sid) {
-        if (!in_array($sid, $orderedSections)) {
+        if (!isset($seenInOrder[$sid])) {
             $orderedSections[] = $sid;
+            $seenInOrder[$sid] = true;
         }
     }
     $sectionOrder = $orderedSections;
 }
 
-// Section'ları render et
+// Section'ları render et (duplicate kontrolü ile)
+$renderedSections = []; // Render edilen section'ları takip et
 foreach ($sectionOrder as $sectionId) {
-    renderHomeSection($sectionId, $sectionsMap, $defaultSections, $themeLoader);
+    // Her section sadece bir kez render edilsin
+    if (!isset($renderedSections[$sectionId])) {
+        renderHomeSection($sectionId, $sectionsMap, $defaultSections, $themeLoader);
+        $renderedSections[$sectionId] = true;
+    }
 }
